@@ -2,12 +2,20 @@ import numpy as np
 import math 
 
 # activation: sigmoid
-def F(x):
+def xF(x):
     return 1 / (1 + math.exp(-x))
 
 # derivative of activation
-def dF(x):
+def xdF(x):
     return F(x) * (1-F(x))
+
+# activation: sigmoid
+def F(x):
+    return x
+
+# derivative of activation
+def dF(x):
+    return 1
 
 
 class FreeEnergyNetwork:
