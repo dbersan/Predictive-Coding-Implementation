@@ -51,17 +51,33 @@ class FreeEnergyNetwork:
         self.Theta_rate  = 0.5
         self.lock_output = False
 
+        # Normalization
+        self.max_input  = 1.0
+        self.max_output = 1.0
+
     def setInput(self, input):
         assert self.neurons_per_layer[-1] == input.shape[0]
-        self.X[self.layers-1][:] = input
+        self.X[self.layers-1][:] = input/self.max_input
 
     def setOutput(self, output):
         assert self.neurons_per_layer[0] == output.shape[0]
-        self.X[0][:] = output
+        self.X[0][:] = output/self.max_output
+
         self.lock_output = True
+        if self.record:
+            self.lock_timestamps.append(self.t)
+
+    def compute_normalization(self, input_data, output_data):
+        for x in output_data:
+            self.max_output = max(max(x), self.max_output)
+
+        for x in input_data:
+            self.max_input = max(max(x), self.max_input)
 
     def unlock_output(self):
         self.lock_output = False
+        if self.record:
+            self.unlock_timestamps.append(self.t)
 
     def inference(self):
         # update Xs
