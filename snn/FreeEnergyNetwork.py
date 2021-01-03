@@ -79,6 +79,10 @@ class FreeEnergyNetwork:
         if self.record:
             self.lock_timestamps.append(self.t)
 
+    def getOutput(self):
+        # Returns denormalized output of network
+        return self.X[0][:] * self.max_output
+
     def compute_normalization(self, input_data, output_data):
         for x in output_data:
             self.max_output = max(max(x), self.max_output)
