@@ -100,6 +100,15 @@ class FreeEnergyNetwork:
                 deltaX = - self.X_rate * self.getE(0, i)
                 self.incrementX(0, i, deltaX)
     
+
+    def inference_loop(self, steps):
+        for i in range(steps):
+            self.inference()
+            self.t += 1
+
+            if self.record:
+                self.network_snapshot()
+
     def updateWeights(self):
         for l in range(1, self.layers):
             for i in range(1, self.neurons_per_layer[l-1]+1):
