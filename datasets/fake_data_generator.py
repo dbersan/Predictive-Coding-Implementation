@@ -7,19 +7,23 @@ from mpl_toolkits.mplot3d import Axes3D
 # Axes3D import has side effects, it enables using projection='3d' in add_subplot
 import matplotlib.pyplot as plt
 
-# Select function to sample
-FUNCTION    = f1
-NOISE_LEVEL = 0.8
-VISUALIZE   = True
-RANGE_MIN   = -3
-RANGE_MAX   = 3
-STEP        = 0.4
-
 # Functions to be sampled
 
 def f1(x,y):
     # f = x^2 + y^2
     return x**2 + y**2
+
+def f2(x,y):
+    # f = x^2 + y^2
+    return x**3*np.cos(y)
+
+# Select parameters
+FUNCTION    = f2
+NOISE_LEVEL = 0.0 
+VISUALIZE   = True
+RANGE_MIN   = -35
+RANGE_MAX   = 35
+STEP        = 0.3
 
 def create_csv(filename, data):
     separator = ','
@@ -53,7 +57,7 @@ def generate_data(generator_function, range_min, range_max, step, noise_level=0.
     X, Y = np.meshgrid(x, y)
     xs = np.ravel(X)
     ys = np.ravel(Y)
-    zs = np.array(f1(xs, ys))
+    zs = np.array(generator_function(xs, ys))
 
     if noise_level>0.0:
         noise = np.random.normal(0,noise_level,len(zs))
