@@ -2,22 +2,32 @@ import numpy as np
 import math 
 import matplotlib.pyplot as plt
 
-# activation: sigmoid
-def xF(x):
-    return 1 / (1 + math.exp(-x))
 
-# derivative of activation
-def xdF(x):
+# sigmoid
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+def dsigmoid(x):
     return F(x) * (1-F(x))
 
-# activation: sigmoid
-def F(x):
+# identity
+def identity(x):
     return x
-
-# derivative of activation
-def dF(x):
+def didentity(x):
     return 1
 
+# relu
+def relu(x):
+    if x > 0:
+        return x
+    return 0
+def drelu(x):
+    if x > 0:
+        return 1
+    return 0
+
+# Define activation function
+F = relu
+dF = drelu
 
 class FreeEnergyNetwork:
     def __init__(self, neurons_per_layer):
@@ -29,7 +39,11 @@ class FreeEnergyNetwork:
         self.E      = {}
         self.Theta  = {}
 
+        # Store network Mean Squared Error over time
+        self.MSE = []
+
         # For visualizations
+        # Record specific neuron activity at each time 
         self.T              = []
         self.t              = 0
         self.record         = False
@@ -40,11 +54,10 @@ class FreeEnergyNetwork:
         # List of neurons to be recorded 
         self.record_neurons_list_x = []
         self.record_neurons_list_e = []
+        self.recorded_data_x = {} # activity on X neurons
+        self.recorded_data_e = {} # activiiy on E neurons
+        self.recorded_error = [] # total activity on error neurons
 
-        # Recorded data
-        self.recorded_data_x = {}
-        self.recorded_data_e = {}
-        self.recorded_error = []
 
         for l in range(self.layers):
             # X(layer, neuron) = self.X[layer, neuron-1]
@@ -60,35 +73,39 @@ class FreeEnergyNetwork:
         self.Sigma   = 1
         self.X_rate  = 0.3
         self.E_rate  = 0.3
-        self.Theta_rate  = 0.5
+        self.Theta_rate  = 0.28
         self.lock_output = False
 
         # Normalization
         self.max_input  = 1.0
+        self.min_input  = 0
         self.max_output = 1.0
+        self.min_output = 0
 
     def setInput(self, input):
         assert self.neurons_per_layer[-1] == input.shape[0]
-        self.X[self.layers-1][:] = input/self.max_input
+        self.X[self.layers-1][:] = (input-self.min_input)/(self.max_input-self.min_input)
 
     def setOutput(self, output):
         assert self.neurons_per_layer[0] == output.shape[0]
-        self.X[0][:] = output/self.max_output
-
+        self.X[0][:] = (output-self.min_output)/(self.max_output-self.min_output)
+        
         self.lock_output = True
         if self.record:
             self.lock_timestamps.append(self.t)
 
     def getOutput(self):
         # Returns denormalized output of network
-        return self.X[0][:] * self.max_output
+        return self.X[0][:] * (self.max_output-self.min_output) + self.min_output
 
     def compute_normalization(self, input_data, output_data):
         for x in output_data:
             self.max_output = max(max(x), self.max_output)
+            self.min_output  = min(min(x), self.min_output)
 
         for x in input_data:
             self.max_input = max(max(x), self.max_input)
+            self.min_input  = min(min(x), self.min_input)
 
     def unlock_output(self):
         self.lock_output = False
@@ -112,11 +129,10 @@ class FreeEnergyNetwork:
 
         # update final Xs
         if not self.lock_output:
-            for i in range(1, self.neurons_per_layer[self.layers-1]+1): # 1 .. self.(neurons on last layer)
+            for i in range(1, self.neurons_per_layer[0]+1): # 1 .. self.(neurons on last layer)
                 deltaX = - self.X_rate * self.getE(0, i)
                 self.incrementX(0, i, deltaX)
     
-
     def inference_loop(self, steps):
         for i in range(steps):
             self.inference()
@@ -131,6 +147,48 @@ class FreeEnergyNetwork:
                 for j in range(1, self.neurons_per_layer[l]+1):
                     deltaTheta = self.Theta_rate * self.dTheta(l, i, j)
                     self.incrementTheta(l, i ,j, deltaTheta)
+
+    def train(self, x, y, inference_steps, epochs, x_valid=[], y_valid=[]):
+
+        assert len(x) == len(y)
+        assert len(x_valid) == len(y_valid)
+        # self.setInput(x[0])
+        # self.inference_loop(inference_steps)
+
+        for e in range(epochs):
+            print(f"Epoch {e+1}:")
+
+            # Train
+            for i in range(len(x)):
+                self.setInput(x[i])
+                self.unlock_output()
+                self.inference_loop(inference_steps)
+
+                self.setOutput(y[i])
+                self.inference_loop(inference_steps)
+                self.updateWeights()
+
+            # Calculate mean error
+            if len(x_valid) > 0:
+                mse = 0
+                self.unlock_output()
+                for i in range(len(x_valid)):
+                    self.setInput(x_valid[i])
+                    self.inference_loop(inference_steps)
+                    y_hat = self.getOutput()
+                    error = np.linalg.norm(y_hat-y_valid[i])
+                    mse += error
+
+                mse /= len(x_valid)
+                print(f"MSE: {mse}")
+                self.MSE.append(mse)
+    
+    def plot_error(self):
+        plt.plot(self.MSE, '-', label="MSE", linewidth=2.0 )
+        plt.legend(loc="upper left")
+        plt.ylabel('value')
+        plt.xlabel('epoch')
+        plt.show()
 
     def getX(self, layer, neuron):
         return self.X[layer][neuron-1]
@@ -168,7 +226,7 @@ class FreeEnergyNetwork:
     def dTheta(self, layer, i, j):
         return self.getE(layer-1, i) * F(self.getX(layer, j))
 
-    def record_neurons(self, neuron_list_x, neuron_list_e):
+    def record_neurons(self, neuron_list_x=[], neuron_list_e=[]):
         if not self.record:
             self.record = True
             for layer,index in neuron_list_x:
