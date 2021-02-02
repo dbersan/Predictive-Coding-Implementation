@@ -1,13 +1,21 @@
+import torch
 import math
+import numpy as np
 
-# activation: sigmoid
-def F(x):
-    return 1 / (1 + math.exp(-x))
+dtype = torch.float
 
-# derivative of activation
-def dF(x):
-    return F(x) * (1-F(x))
+x = torch.linspace(-math.pi, math.pi, 2000, dtype=dtype)
+y = torch.sin(x)
 
-X = 0.72
-print(f"{F(X)}")
-print(f"{dF(X)}")
+a = torch.rand(4,2, dtype=dtype)
+b = np.random.rand(2,3)
+b = torch.from_numpy(b.astype(np.float32))
+m = torch.matmul(a,b)
+
+
+
+print(a)
+print(b)
+print(m)
+
+
