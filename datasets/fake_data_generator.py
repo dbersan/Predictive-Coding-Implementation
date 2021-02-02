@@ -18,11 +18,11 @@ def f2(x,y):
     return x**3*np.cos(y)
 
 # Select parameters
-FUNCTION    = f2
-NOISE_LEVEL = 0.0 
+FUNCTION    = f1
+NOISE_LEVEL = 0.1
 VISUALIZE   = True
-RANGE_MIN   = -35
-RANGE_MAX   = 35
+RANGE_MIN   = -3
+RANGE_MAX   = 3
 STEP        = 0.3
 
 def create_csv(filename, data):
