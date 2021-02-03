@@ -1,4 +1,5 @@
 import torch
+import torch.nn
 import math
 import numpy as np
 import copy
@@ -18,10 +19,23 @@ m = torch.matmul(a,b)
 
 print(a)
 print(b)
+m[0,0] = -1
 print(m)
+print(m*m)
+
+v = torch.tensor([0.1,0.01,1,2,3])
+zeros = torch.zeros(5, dtype=dtype)
+c = torch.lt(zeros, v).prod()
+print( c )
+if c:
+    print('aa')
 
 
-a = np.array([[1,2,3],[4,5,6]])
-b = a.reshape(-1,1).astype(np.float)
-a[0,0] = -7777
-print(b)
+
+
+
+
+
+
+
+# print(m.transpose(1,0))

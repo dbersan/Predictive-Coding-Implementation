@@ -1,12 +1,24 @@
 import torch
+import torch.nn
 import numpy as np
 import math
 import copy
 
 class PcTorch:
-    ActivationFunctions = ['relu', 'sigmoid']
-    Optimizers = ['none', 'adam', 'rmsprop']
     dtype = np.float
+    torch_type = torch.double # 'torch_type' has to be the pytorch equivalent of 'dtype' 
+
+    # Define derivative of activation functions
+    def dRelu(cls, x):
+        return torch.gt(x, torch.zeros(x.shape)).type(PcTorch.torch_type)
+
+    def dSigmoid(cls, x):
+        sig_x = torch.nn.Sigmoid()(x)
+        return sig_x*(1 - sig_x)
+
+    ActivationFunctions = {'relu': torch.nn.ReLU(), 'sigmoid': torch.nn.Sigmoid() }
+    ActivationDerivatives = {'relu': PcTorch.dRelu, 'sigmoid': PcTorch.dSigmoid }
+    Optimizers = ['none', 'adam', 'rmsprop']
 
     def __init__(self, neurons):
         """
@@ -43,6 +55,7 @@ class PcTorch:
 
         # Hardcoded parameters 
         self.beta = 0.1 # Inference rate
+        self.min_inference_error = 0.00001
 
     def train(self, 
         train_data, 
@@ -78,16 +91,23 @@ class PcTorch:
         assert self.train_samples_count > 1
 
         self.batch_size = batch_size
+        self.epochs = epochs
+        self.max_it = max_it
 
         assert self.batch_size <= self.train_samples_count
-        assert epochs >= 1
-        assert max_it >= 1
+        assert self.epochs >= 1
+        assert self.max_it >= 1
 
         if activation not in PcTorch.ActivationFunctions:
             activation = PcTorch.ActivationFunctions[0]
         
-        if optmizer not in PcTorch.Optimizers:
-            optmizer = PcTorch.Optimizers[0]
+        # Define activation function
+        self.F = PcTorch.ActivationFunctions[activation]
+        self.dF = PcTorch.ActivationDerivatives[activation]
+
+        self.optimizer = optmizer
+        if self.optimizer  not in PcTorch.Optimizers:
+            self.optimizer  = PcTorch.Optimizers[0]
 
         # Perform deep copy to avoid modifying original arrays?
         # train_data = copy.deepcopy(train_data)
@@ -167,10 +187,68 @@ class PcTorch:
 
         return data_batches, labels_batches
 
+    def feedforward(self, data_batch):
+        """Makes a batch forward pass given the input data passed
 
+        Args: 
+            data_batch: pytorch array with shape [data_size, batch_size], where 'data_size' must match self.w[0].shape[1
+            
+        Returns:
+            The neuron states of all layers 
+        """
+        assert data_batch.shape[0] == self.w[0].shape[1]
+        x = {0:data_batch}
+        for l in range(1,self.n_layers):
+            if l == 1:
+                x[l] = torch.matmul(self.w[l-1],x[l-1]) + self.b[l-1] 
+                # Not applying activation on first layer
+                # https://www.reddit.com/r/MachineLearning/comments/2c0yw1/do_inputoutput_neurons_of_neural_networks_have/
+            else:
+                x[l] = torch.matmul(self.w[l-1],self.F(x[l-1])) + self.b[l-1]
 
+        return x
 
+    def inference(self, x)
+        """Performs (batch) inference in the network, according to the predictive coding equations
+        
+        Args: 
+            x: (batch) neuron activations for each layer
 
+        Returns:
+            The (batch) layer-wise error neurons and (relaxed) activations 
+        """
+        update_rate = self.beta
+        zeros = torch.zeros(self.batch_size, dtype=dtype)
+
+        # Calculate initial error neuron values: 
+        # e[l] (x[l]-mu[l])/variance : assume variance is 1 
+        e = {}
+        previous_error = torch.zeros(self.batch_size) # square of the sum of the of error neurons 
+        for l in range(1,self.n_layers):
+            e[l] = x[l] - torch.matmul(self.w[l-1],self.F(x[l-1])) - self.b[l-1]
+            previous_error += torch.square(torch.sum(e[l], 0))
+
+        # Inference loop
+        for i in range(self.max_it):
+            current_error = torch.zeros(self.batch_size)
+
+            # Update X
+            for l in range(1,self.n_layers):
+                g = torch.matmul( self.w[l].transpose(1,0) , e[l+1] ) * self.dF(x[l])
+                x[l] = x[l] + update_rate*(g - e[l])
+
+            # Update E 
+            for l in range(1, self.n_layers):
+                e[l] = x[l] - torch.matmul( self.w[l-1], self.F(x[l-1])) - b[l-1]
+                current_error += torch.square(torch.sum(e[l], 0))
+
+            # Check if ANY error increased after inference
+            if torch.gt( current_error, previous_error ).prod().type(torch.bool):
+                update_rate = update_rate/2 # decrease update rate
+            
+            # Check if minimum error difference condition has been met
+            if torch.abs(torch.mean(current_error - previous_error)) < self.min_inference_error:
+                break
 
 
 
