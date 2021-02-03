@@ -250,6 +250,20 @@ class PcTorch:
             if torch.abs(torch.mean(current_error - previous_error)) < self.min_inference_error:
                 break
 
+        return x, e
+
+    def mse(self, labels_estimated, labels_groundtruth):
+        """Calculates mean squared error for network output, given the groundtruth labels with same shape
+
+        Args:
+            labels_estimated: network estimation output
+            labels_groundtruth: groundtruth for the estimation
+
+        Returns: 
+            The mean squared error of the estimation to the groundtruth for each sample, summed over the samples of the batch (i.e., a scalar is returned)
+
+        """
+        return torch.square(labels_estimated - labels_groundtruth).mean(0).sum()/self.batch_size
 
 
 
