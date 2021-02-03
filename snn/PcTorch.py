@@ -3,21 +3,16 @@ import torch.nn
 import numpy as np
 import math
 import copy
+import sys
+# from util.util import dRelu, dSigmoid
+from snn import util
 
 class PcTorch:
     dtype = np.float
     torch_type = torch.double # 'torch_type' has to be the pytorch equivalent of 'dtype' 
 
-    # Define derivative of activation functions
-    def dRelu(cls, x):
-        return torch.gt(x, torch.zeros(x.shape)).type(PcTorch.torch_type)
-
-    def dSigmoid(cls, x):
-        sig_x = torch.nn.Sigmoid()(x)
-        return sig_x*(1 - sig_x)
-
     ActivationFunctions = {'relu': torch.nn.ReLU(), 'sigmoid': torch.nn.Sigmoid() }
-    ActivationDerivatives = {'relu': PcTorch.dRelu, 'sigmoid': PcTorch.dSigmoid }
+    ActivationDerivatives = {'relu': util.dRelu, 'sigmoid': util.dSigmoid }
     Optimizers = ['none', 'adam', 'rmsprop']
 
     def __init__(self, neurons):
@@ -133,18 +128,25 @@ class PcTorch:
             assert valid_labels[0].shape[0] == self.neurons[-1]
 
         # Convert to batches in pytorch arrays
-        self.train_data_batches, self.train_labels_batches = self.get_batches_pytorch(
+        self.train_data, self.train_labels = self.get_batches_pytorch(
             train_data,
             train_labels,
             self.batch_size
         )
 
-        # Convert validation data to single pytorch array
-        self.valid_data_batches, self.valid_labels_batches = self.get_batches_pytorch(
+        self.valid_data, self.valid_labels = self.get_batches_pytorch(
             valid_data,
             valid_labels,
-            self.valid_samples_count
+            self.batch_size
         )
+
+        batch_index = 0
+        output_layer = self.n_layers-1
+
+        x = self.feedforward(self.train_data[batch_index])
+
+        mse = self.mse(x[output_layer], self.train_labels[batch_index])
+        print("error: ", mse)
 
     def get_batches_pytorch(self, data, labels, batch_size):
         """Converts dataset from list of samples to list of batches, each containing multiple samples in a single array. Also converts the data to pytorch 
@@ -208,24 +210,23 @@ class PcTorch:
 
         return x
 
-    def inference(self, x)
+    def inference(self, x):
         """Performs (batch) inference in the network, according to the predictive coding equations
         
         Args: 
-            x: (batch) neuron activations for each layer
+            x: neuron activations for each layer (batch form)
 
         Returns:
-            The (batch) layer-wise error neurons and (relaxed) activations 
+            The (relaxed) activations and layer-wise error neurons (batch form)
         """
         update_rate = self.beta
-        zeros = torch.zeros(self.batch_size, dtype=dtype)
 
         # Calculate initial error neuron values: 
         # e[l] (x[l]-mu[l])/variance : assume variance is 1 
         e = {}
         previous_error = torch.zeros(self.batch_size) # square of the sum of the of error neurons 
         for l in range(1,self.n_layers):
-            e[l] = x[l] - torch.matmul(self.w[l-1],self.F(x[l-1])) - self.b[l-1]
+            e[l] = x[l] - torch.matmul(self.w[l-1], self.F(x[l-1]) ) - self.b[l-1]
             previous_error += torch.square(torch.sum(e[l], 0))
 
         # Inference loop
@@ -233,17 +234,18 @@ class PcTorch:
             current_error = torch.zeros(self.batch_size)
 
             # Update X
-            for l in range(1,self.n_layers):
-                g = torch.matmul( self.w[l].transpose(1,0) , e[l+1] ) * self.dF(x[l])
+            for l in range(1,self.n_layers-1): # do not alter output (labels) layer 
+                dfx = self.dF(x[l])
+                g = torch.matmul( self.w[l].transpose(1,0) , e[l+1] ) * dfx
                 x[l] = x[l] + update_rate*(g - e[l])
 
             # Update E 
             for l in range(1, self.n_layers):
-                e[l] = x[l] - torch.matmul( self.w[l-1], self.F(x[l-1])) - b[l-1]
+                e[l] = x[l] - torch.matmul( self.w[l-1], self.F(x[l-1])) - self.b[l-1]
                 current_error += torch.square(torch.sum(e[l], 0))
 
             # Check if ANY error increased after inference
-            if torch.gt( current_error, previous_error ).prod().type(torch.bool):
+            if torch.gt( current_error, previous_error ).sum().type(torch.bool):
                 update_rate = update_rate/2 # decrease update rate
             
             # Check if minimum error difference condition has been met
