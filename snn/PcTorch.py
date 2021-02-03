@@ -48,7 +48,25 @@ class PcTorch:
                 1,
                 dtype=PcTorch.dtype)
 
-        # Hardcoded parameters 
+        # Optimizer variables (adam)
+        self.vdw = {}
+        self.vdb = {}
+        self.sdw = {}
+        self.sdb = {}
+
+        for l in range(self.n_layers-1):
+            self.vdw[l] = torch.zeros(self.w[l].shape)
+            self.vdb[l] = torch.zeros(self.b[l].shape)
+            self.sdw[l] = torch.zeros(self.w[l].shape)
+            self.sdb[l] = torch.zeros(self.b[l].shape)
+
+        self.alpha = 0.01
+        self.b1 = 0.9
+        self.b2 = 0.999
+        self.epslon = 0.00000001
+        self.t = 1
+
+        # Predictive Coding parameters 
         self.beta = 0.1 # Inference rate
         self.min_inference_error = 0.00001
 
@@ -146,7 +164,16 @@ class PcTorch:
         x = self.feedforward(self.train_data[batch_index])
 
         mse = self.mse(x[output_layer], self.train_labels[batch_index])
-        print("error: ", mse)
+        print("Error: ", mse)
+
+        x[output_layer] = self.train_labels[batch_index]
+        x,e = self.inference(x)
+        
+        self.update_weights(x,e)
+
+        x = self.feedforward(self.train_data[batch_index])
+        mse = self.mse(x[output_layer], self.train_labels[batch_index])
+        print("Error: ", mse)
 
     def get_batches_pytorch(self, data, labels, batch_size):
         """Converts dataset from list of samples to list of batches, each containing multiple samples in a single array. Also converts the data to pytorch 
@@ -253,6 +280,59 @@ class PcTorch:
                 break
 
         return x, e
+
+    def gradients(self, x, e):
+        """Calculates gradients for w and b, given the Predictive Coding equations. Assumes variance is 1.
+        
+        Args:
+            x: neuron values (batch)
+            e: neuron errors given by the inference method (batch)
+
+        Returns:
+            Gradients for w and b
+        """
+
+        w_dot = {}
+        b_dot = {}
+
+        for l in range(self.n_layers-1):
+            b_dot[l] = torch.sum(e[l+1], 1).view(-1, 1)/self.batch_size # make column vector
+            w_dot[l] = torch.matmul( e[l+1], self.dF(x[l]).transpose(0,1) )/self.batch_size
+
+        return w_dot, b_dot
+
+    def update_weights(self, x, e):
+        """Calculates the gradients based on values of the neuron errors after inference, and then update the gradients according to some optimization algorithm
+
+        Args:
+            x: neuron values (batch)
+            e: neuron errors given by the inference method (batch)
+
+        """
+
+        dw,db = self.gradients(x,e)
+        for l in range(self.n_layers-1):
+
+            # Switch optimizer
+            if self.optimizer == 'none':
+                self.w[l] += 0.05*dw[l]
+                self.b[l] += 0.05*db[l]
+
+            elif self.optimizer == 'adam':
+                self.vdw[l] = self.b1*self.vdw[l] + (1-self.b1)*dw[l]
+                self.vdb[l] = self.b1*self.vdb[l] + (1-self.b1)*db[l]
+                self.sdw[l] = self.b2*self.sdw[l] + (1-self.b2)*(dw[l].square())
+                self.sdb[l] = self.b2*self.sdb[l] + (1-self.b2)*(db[l].square())
+                
+                vdw_corr = self.vdw[l]/(1 - self.b1**self.t)
+                vdb_corr = self.vdb[l]/(1 - self.b1**self.t)
+                sdw_corr = self.sdw[l]/(1 - self.b2**self.t)
+                sdb_corr = self.sdb[l]/(1 - self.b2**self.t)
+
+                self.w[l] = self.w[l] + self.alpha*vdw_corr/(torch.sqrt(sdw_corr) + self.epslon)
+                self.b[l] = self.b[l] + self.alpha*vdb_corr/(torch.sqrt(sdb_corr) + self.epslon)
+
+                self.t += 1
 
     def mse(self, labels_estimated, labels_groundtruth):
         """Calculates mean squared error for network output, given the groundtruth labels with same shape

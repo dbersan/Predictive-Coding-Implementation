@@ -2,7 +2,7 @@ import torch.nn
 import torch
 
 def dRelu(x):
-    return torch.gt(x, torch.zeros(x.shape))
+    return torch.gt(x, torch.zeros(x.shape)).type(x.type())
 
 def dSigmoid(x):
     sig_x = torch.nn.Sigmoid()(x)

@@ -8,9 +8,10 @@ from snn.PcTorch import PcTorch
 DATASET_FILE = '../datasets/generated_f1.csv'
 VALID_PERCENTAGE = 0.2
 NETWORK_ARCHITECTURE = [2,4,1]
-BATCH_SIZE = 20
+BATCH_SIZE = 3
 EPOCHS = 60
 INFERENCE_STEPS = 30
+OPTIMIZER = 'adam'
 
 # Reads csv, first 2 columns are X, last column is Y
 def read_csv(file):
@@ -58,5 +59,6 @@ model_torch.train(
     y_valid, 
     batch_size=BATCH_SIZE, 
     epochs=EPOCHS, 
-    max_it=INFERENCE_STEPS
+    max_it=INFERENCE_STEPS,
+    optmizer=OPTIMIZER
 )
