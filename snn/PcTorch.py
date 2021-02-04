@@ -128,7 +128,7 @@ class PcTorch:
         # valid_data = copy.deepcopy(valid_data)
         # valid_labels = copy.deepcopy(valid_labels)
 
-        # Flatten training data, etc
+        # Flatten training data, validation data
         for i in range(self.train_samples_count):
             train_data[i] = train_data[i].reshape([-1, 1])
             train_labels[i] = train_labels[i].reshape([-1, 1])
@@ -158,22 +158,36 @@ class PcTorch:
             self.batch_size
         )
 
-        batch_index = 0
-        output_layer = self.n_layers-1
+        # Train
+        out_layer = self.n_layers-1
+        n_batches = len(self.train_data)
+        for e in range(self.epochs):
+            
+            loss = 0
 
-        x = self.feedforward(self.train_data[batch_index])
+            # Iterate over the training batches
+            for batch_index in range(n_batches):
+                train_data = self.train_data[batch_index]
+                train_labels = self.train_labels[batch_index]
 
-        mse = self.mse(x[output_layer], self.train_labels[batch_index])
-        print("Error: ", mse)
+                # Feedforward
+                x = self.feedforward(train_data)
 
-        x[output_layer] = self.train_labels[batch_index]
-        x,e = self.inference(x)
-        
-        self.update_weights(x,e)
+                # Show training loss for current batch
+                loss += self.mse(x[out_layer], train_labels)
 
-        x = self.feedforward(self.train_data[batch_index])
-        mse = self.mse(x[output_layer], self.train_labels[batch_index])
-        print("Error: ", mse)
+                # Perform inference
+                x[out_layer] = train_labels
+                x,e = self.inference(x)
+
+                # Update weights
+                self.update_weights(x,e)
+
+            # Calculate validation loss
+
+            # Show loss 
+            loss = loss/n_batches
+            print("Loss: ", loss)
 
     def get_batches_pytorch(self, data, labels, batch_size):
         """Converts dataset from list of samples to list of batches, each containing multiple samples in a single array. Also converts the data to pytorch 
