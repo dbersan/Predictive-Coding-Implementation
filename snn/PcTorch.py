@@ -184,10 +184,22 @@ class PcTorch:
                 self.update_weights(x,e)
 
             # Calculate validation loss
+            valid_loss=0
+            for i in range(len(self.valid_data)):
+                valid_data = self.valid_data[i]
+                valid_labels = self.valid_labels[i]
+                x = self.feedforward(valid_data)
+                valid_loss += self.mse(x[out_layer], valid_labels)
 
             # Show loss 
             loss = loss/n_batches
+            valid_loss = valid_loss/len(self.valid_data)
+            # util.clear()
+            print("-------------------------------------")
             print("Loss: ", loss)
+            print("Valid Loss: ", valid_loss)
+
+
 
     def get_batches_pytorch(self, data, labels, batch_size):
         """Converts dataset from list of samples to list of batches, each containing multiple samples in a single array. Also converts the data to pytorch 
@@ -361,7 +373,29 @@ class PcTorch:
         """
         return torch.square(labels_estimated - labels_groundtruth).mean(0).sum()/self.batch_size
 
+    def test_sample(self, input):
+        """Performs a forward pass on a single sample
+        
+        Args: 
+            input: a np.array which is a single data sample 
 
+        Returns: 
+            an np.array with the network result
+        """
+
+        # Flatten input 
+        flattened = input.reshape([-1, 1])
+
+        # Convert to torch tensor
+        tensor = torch.from_numpy(flattened.astype(PcTorch.dtype))
+
+        # Feedforward
+        x = self.feedforward(tensor)
+
+        # Convert last layer to np.array
+        output = x[self.n_layers-1].numpy()
+
+        return output
 
 
 
