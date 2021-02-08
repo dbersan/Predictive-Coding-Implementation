@@ -4,6 +4,11 @@ import csv
 from os import system, name 
 import numpy as np
 
+# Onehot encode a 1 dim array to 2 dim array
+def indices_to_one_hot(data, nb_classes):
+    """Convert an iterable of indices to one-hot encoded labels."""
+    targets = np.array(data).reshape(-1)
+    return np.eye(nb_classes)[targets]
   
 # define our clear function 
 def clear(): 
