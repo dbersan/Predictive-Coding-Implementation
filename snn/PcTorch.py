@@ -4,6 +4,7 @@ import numpy as np
 import math
 import copy
 import sys
+from sklearn import metrics
 # from util.util import dRelu, dSigmoid
 from snn import util
 
@@ -162,9 +163,7 @@ class PcTorch:
         out_layer = self.n_layers-1
         n_batches = len(self.train_data)
         for e in range(self.epochs):
-            
-            loss = 0
-
+        
             # Iterate over the training batches
             for batch_index in range(n_batches):
                 train_data = self.train_data[batch_index]
@@ -173,9 +172,6 @@ class PcTorch:
                 # Feedforward
                 x = self.feedforward(train_data)
 
-                # Show training loss for current batch
-                loss += self.mse(x[out_layer], train_labels)
-
                 # Perform inference
                 x[out_layer] = train_labels
                 x,e = self.inference(x)
@@ -183,22 +179,46 @@ class PcTorch:
                 # Update weights
                 self.update_weights(x,e)
 
-            # Calculate validation loss
+            # Calculate training loss and accuracy
+            predicted = []
+            groundtruth = []
+            loss = 0
+            for batch_index in range(n_batches):
+                train_data = self.train_data[batch_index]
+                train_labels = self.train_labels[batch_index]
+
+                # Show training loss for current batch
+                x = self.feedforward(train_data)
+                loss += self.mse(x[out_layer], train_labels)/n_batches
+
+                # accuracy
+                predicted.extend(list(torch.argmax(x[out_layer], dim=0)))
+                groundtruth.extend(list(torch.argmax(train_labels, dim=0)))
+            
+            train_accuracy = metrics.accuracy_score(groundtruth, predicted)
+
+            # Calculate validation loss and accuracy
             valid_loss=0
+            predicted = []
+            groundtruth = []
+
             for i in range(len(self.valid_data)):
                 valid_data = self.valid_data[i]
                 valid_labels = self.valid_labels[i]
+
                 x = self.feedforward(valid_data)
-                valid_loss += self.mse(x[out_layer], valid_labels)
+                valid_loss += self.mse(x[out_layer], valid_labels)/len(self.valid_data)
 
-            # Show loss 
-            loss = loss/n_batches
-            valid_loss = valid_loss/len(self.valid_data)
-            # util.clear()
+                # accuracy
+                predicted.extend(list(torch.argmax(x[out_layer], dim=0)))
+                groundtruth.extend(list(torch.argmax(valid_labels, dim=0)))
+
+            valid_accuracy = metrics.accuracy_score(groundtruth, predicted)
+
+            # Show loss and accuracy
             print("-------------------------------------")
-            print("Loss: ", loss)
-            print("Valid Loss: ", valid_loss)
-
+            print("Loss: ", loss, "Valid Loss: ", valid_loss)
+            print("Accuracy: ", train_accuracy, "Valid Accuracy: ", valid_accuracy)
 
 
     def get_batches_pytorch(self, data, labels, batch_size):

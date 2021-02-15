@@ -5,7 +5,6 @@
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.datasets import mnist
 import numpy as np
-import matplotlib.pyplot as plt # Visualization
 from skimage.transform import resize
 import pickle
 
