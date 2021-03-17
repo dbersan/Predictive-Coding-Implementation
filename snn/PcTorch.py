@@ -81,7 +81,8 @@ class PcTorch:
         epochs=1,
         max_it=10, 
         activation='relu', 
-        optmizer='none'
+        optmizer='none',
+        dataset_perc = 1.0
     ):
         """Trains the network weights using predictive coding. 
 
@@ -95,13 +96,14 @@ class PcTorch:
             max_it: maximum number of iterations when performing pc inference 
             activation: activation function
             optmizer: optmizer of training algorithm
+            dataset_perc: what percentage of dataset to use for training
         """
+
         assert len(train_data) == len(train_labels)
         assert len(valid_data) == len(valid_labels)
         
         self.train_samples_count = len(train_data)
         self.valid_samples_count = len(valid_data)
-
         assert self.train_samples_count > 1
 
         self.batch_size = batch_size
@@ -111,6 +113,15 @@ class PcTorch:
         assert self.batch_size <= self.train_samples_count
         assert self.epochs >= 1
         assert self.max_it >= 1
+
+        # Evaluation metrics history
+        self.train_loss_h = []
+        self.train_acc_h  = []
+        self.valid_loss_h = []
+        self.valid_acc_h  = []
+
+        # Number of batches to process
+        PROCESS_BATCH_COUNT = int(np.floor(self.train_samples_count * dataset_perc / self.batch_size ))
 
         if activation not in PcTorch.ActivationFunctions:
             activation = PcTorch.ActivationFunctions[0]
@@ -183,7 +194,7 @@ class PcTorch:
                 if batch_index %100 == 0:
                     print(f"batch: {batch_index+1}/{n_batches}")
 
-                if batch_index> 500:
+                if batch_index> PROCESS_BATCH_COUNT:
                     break
 
             # Calculate training loss and accuracy
@@ -224,9 +235,28 @@ class PcTorch:
 
             # Show loss and accuracy
             print("-------------------------------------")
+            print(f"Epoch: {epoch+1}/{self.epochs}")
             print("Loss: ", loss, "Valid Loss: ", valid_loss)
             print("Accuracy: ", train_accuracy, "Valid Accuracy: ", valid_accuracy)
 
+            self.train_loss_h.append(loss)
+            self.train_acc_h.append(train_accuracy*100.0)
+            self.valid_loss_h.append(valid_loss)
+            self.valid_acc_h.append(valid_accuracy*100.0)
+
+        print("Finished training")
+
+        print("Train_loss=", end="", flush=True)
+        print(self.train_loss_h)
+
+        print("Train_accuracy=", end="", flush=True)
+        print(self.train_acc_h)
+
+        print("Valid_loss=", end="", flush=True)
+        print(self.valid_loss_h)
+
+        print("Valid_accuracy=", end="", flush=True)
+        print(self.valid_acc_h)
 
     def get_batches_pytorch(self, data, labels, batch_size):
         """Converts dataset from list of samples to list of batches, each containing multiple samples in a single array. Also converts the data to pytorch 
@@ -425,7 +455,7 @@ class PcTorch:
             The mean squared error of the estimation to the groundtruth for each sample, summed over the samples of the batch (i.e., a scalar is returned)
 
         """
-        return torch.square(labels_estimated - labels_groundtruth).mean(0).sum()/self.batch_size
+        return torch.square(labels_estimated - labels_groundtruth).mean(0).sum().numpy()/self.batch_size
 
     def test_sample(self, input):
         """Performs a forward pass on a single sample

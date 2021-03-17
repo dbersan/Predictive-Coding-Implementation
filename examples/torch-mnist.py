@@ -9,12 +9,12 @@ from snn.PcTorch import PcTorch
 from snn import util
 
 NETWORK_ARCHITECTURE = [784,500,500,10]
-BATCH_SIZE = 20
-EPOCHS = 30
+BATCH_SIZE = 16
+EPOCHS = 15
 INFERENCE_STEPS = 30
 OPTIMIZER = 'none'  
-OPTIMIZER = 'adam'  
 ACTIVATION='linear'
+OPTIMIZER = 'adam'  
 ACTIVATION='sigmoid'
 
 # load dataset
@@ -58,5 +58,6 @@ model_torch.train(
     epochs=EPOCHS, 
     max_it=INFERENCE_STEPS,
     optmizer=OPTIMIZER,
-    activation=ACTIVATION
+    activation=ACTIVATION,
+    dataset_perc = 0.2
 )
