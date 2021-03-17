@@ -10,16 +10,17 @@ import matplotlib.pyplot as plt
 # Functions to be sampled
 
 def f1(x,y):
-    # f = x^2 + y^2
-    return x**2 + y**2
+    return x**3 + y**2*0.5 + x + y
 
 def f2(x,y):
-    # f = x^2 + y^2
+    return x**2 + y**2
+
+def f3(x,y):
     return x**3*np.cos(y)
 
 # Select parameters
 FUNCTION    = f1
-NOISE_LEVEL = 0.1
+NOISE_LEVEL = 0.3
 VISUALIZE   = True
 RANGE_MIN   = -3
 RANGE_MAX   = 3

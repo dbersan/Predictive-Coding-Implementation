@@ -8,7 +8,7 @@ from snn.FreeEnergyNetwork import FreeEnergyNetwork
 
 DATASET_FILE = '../datasets/generated_f1.csv'
 VALID_PERCENTAGE = 0.2
-NETWORK_ARCHITECTURE = [1,4,2]
+NETWORK_ARCHITECTURE = [1,4,4,2]
 INFERENCE_STEPS = 30
 EPOCHS = 60
 
