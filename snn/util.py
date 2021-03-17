@@ -8,7 +8,9 @@ import numpy as np
 def indices_to_one_hot(data, nb_classes):
     """Convert an iterable of indices to one-hot encoded labels."""
     targets = np.array(data).reshape(-1)
-    return np.eye(nb_classes)[targets]
+    M = np.eye(nb_classes)[targets]
+    M += 0.03
+    return np.minimum(0.97, M)
   
 # define our clear function 
 def clear(): 
@@ -24,9 +26,25 @@ def clear():
 def dRelu(x):
     return torch.gt(x, torch.zeros(x.shape)).type(x.type())
 
+def dLinear(x):
+    return torch.ones(x.shape).type(x.type())
+
 def dSigmoid(x):
     sig_x = torch.nn.Sigmoid()(x)
     return sig_x*(1 - sig_x)
+
+def Linear(x):
+    return x
+
+# Pre processing functions to make algorithm stable
+def preLinear(x):
+    return x
+
+def preRelu(x):
+    return x
+
+def preSigmoid(x):
+    return torch.log(x/(1 - x))
 
 # Reads csv, first 2 columns are X, last column is Y
 def read_csv(file):

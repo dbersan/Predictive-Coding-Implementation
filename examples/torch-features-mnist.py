@@ -7,11 +7,14 @@ sys.path.insert(0,'..')
 from snn.PcTorch import PcTorch
 from snn import util
 
-NETWORK_ARCHITECTURE = [512,250,250,10]
+NETWORK_ARCHITECTURE = [512,500,500,10]
 BATCH_SIZE = 16
 EPOCHS = 30
-INFERENCE_STEPS = 30
-OPTIMIZER = 'adam'
+INFERENCE_STEPS = 40
+OPTIMIZER = 'none'  
+OPTIMIZER = 'adam'  
+ACTIVATION='linear'
+ACTIVATION='sigmoid'
 FEATURES_PATH = '../feature-extractor/mnist-features.p'
 
 # Load features
@@ -62,5 +65,6 @@ model_torch.train(
     batch_size=BATCH_SIZE, 
     epochs=EPOCHS, 
     max_it=INFERENCE_STEPS,
-    optmizer=OPTIMIZER
+    optmizer=OPTIMIZER, 
+    activation=ACTIVATION
 )

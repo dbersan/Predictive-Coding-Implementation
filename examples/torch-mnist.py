@@ -9,10 +9,13 @@ from snn.PcTorch import PcTorch
 from snn import util
 
 NETWORK_ARCHITECTURE = [784,500,500,10]
-BATCH_SIZE = 16
+BATCH_SIZE = 20
 EPOCHS = 30
 INFERENCE_STEPS = 30
-OPTIMIZER = 'adam'
+OPTIMIZER = 'none'  
+OPTIMIZER = 'adam'  
+ACTIVATION='linear'
+ACTIVATION='sigmoid'
 
 # load dataset
 # might yield an error, manually download to ~/.keras/datasets/ instead
@@ -54,5 +57,6 @@ model_torch.train(
     batch_size=BATCH_SIZE, 
     epochs=EPOCHS, 
     max_it=INFERENCE_STEPS,
-    optmizer=OPTIMIZER
+    optmizer=OPTIMIZER,
+    activation=ACTIVATION
 )

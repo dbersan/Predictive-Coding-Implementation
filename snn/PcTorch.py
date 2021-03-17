@@ -12,8 +12,9 @@ class PcTorch:
     dtype = np.float
     torch_type = torch.double # 'torch_type' has to be the pytorch equivalent of 'dtype' 
 
-    ActivationFunctions = {'relu': torch.nn.ReLU(), 'sigmoid': torch.nn.Sigmoid() }
-    ActivationDerivatives = {'relu': util.dRelu, 'sigmoid': util.dSigmoid }
+    ActivationFunctions = {'relu': torch.nn.ReLU(), 'sigmoid': torch.nn.Sigmoid() , 'linear': util.Linear}
+    ActivationDerivatives = {'relu': util.dRelu, 'sigmoid': util.dSigmoid, 'linear': util.dLinear}
+    PreprocessingFunctions = {'relu': util.preRelu, 'sigmoid': util.preSigmoid, 'linear': util.preLinear}
     Optimizers = ['none', 'adam', 'rmsprop']
 
     def __init__(self, neurons):
@@ -39,12 +40,12 @@ class PcTorch:
         for l in range(self.n_layers-1):
             next_layer_neurons = self.neurons[l+1]
             this_layer_neurons = self.neurons[l]
-            self.w[l] = torch.rand(
+            self.w[l] = (torch.rand(
                 next_layer_neurons,
                 this_layer_neurons,
-                dtype=PcTorch.dtype)
+                dtype=PcTorch.dtype)-0.5)/11
 
-            self.b[l] = torch.rand(
+            self.b[l] = torch.zeros(
                 next_layer_neurons,
                 1,
                 dtype=PcTorch.dtype)
@@ -61,7 +62,7 @@ class PcTorch:
             self.sdw[l] = torch.zeros(self.w[l].shape)
             self.sdb[l] = torch.zeros(self.b[l].shape)
 
-        self.alpha = 0.01
+        self.alpha = 0.001
         self.b1 = 0.9
         self.b2 = 0.999
         self.epslon = 0.00000001
@@ -69,7 +70,7 @@ class PcTorch:
 
         # Predictive Coding parameters 
         self.beta = 0.1 # Inference rate
-        self.min_inference_error = 0.00001
+        self.min_inference_error = 0.00000001
 
     def train(self, 
         train_data, 
@@ -94,7 +95,6 @@ class PcTorch:
             max_it: maximum number of iterations when performing pc inference 
             activation: activation function
             optmizer: optmizer of training algorithm
-
         """
         assert len(train_data) == len(train_labels)
         assert len(valid_data) == len(valid_labels)
@@ -118,6 +118,7 @@ class PcTorch:
         # Define activation function
         self.F = PcTorch.ActivationFunctions[activation]
         self.dF = PcTorch.ActivationDerivatives[activation]
+        self.preprocessing = PcTorch.PreprocessingFunctions[activation]
 
         self.optimizer = optmizer
         if self.optimizer  not in PcTorch.Optimizers:
@@ -162,7 +163,7 @@ class PcTorch:
         # Train
         out_layer = self.n_layers-1
         n_batches = len(self.train_data)
-        for e in range(self.epochs):
+        for epoch in range(self.epochs):
         
             # Iterate over the training batches
             for batch_index in range(n_batches):
@@ -176,8 +177,14 @@ class PcTorch:
                 x[out_layer] = train_labels
                 x,e = self.inference(x)
 
-                # Update weights
+                # Update weightsx
                 self.update_weights(x,e)
+
+                if batch_index %100 == 0:
+                    print(f"batch: {batch_index+1}/{n_batches}")
+
+                if batch_index> 500:
+                    break
 
             # Calculate training loss and accuracy
             predicted = []
@@ -254,7 +261,7 @@ class PcTorch:
 
             # Convert to pytorch array and append to the return variables
             data_batches.append(
-                torch.from_numpy(data_array.astype(PcTorch.dtype))
+                self.preprocessing(torch.from_numpy(data_array.astype(PcTorch.dtype)))
             )
             labels_batches.append(
                 torch.from_numpy(labels_array.astype(PcTorch.dtype))
@@ -274,12 +281,17 @@ class PcTorch:
         assert data_batch.shape[0] == self.w[0].shape[1]
         x = {0:data_batch}
         for l in range(1,self.n_layers):
-            if l == 1:
+            #if l == 1:
+            if False:
                 x[l] = torch.matmul(self.w[l-1],x[l-1]) + self.b[l-1] 
                 # Not applying activation on first layer
                 # https://www.reddit.com/r/MachineLearning/comments/2c0yw1/do_inputoutput_neurons_of_neural_networks_have/
             else:
-                x[l] = torch.matmul(self.w[l-1],self.F(x[l-1])) + self.b[l-1]
+                Fx = self.F(x[l-1])
+                x[l] = torch.matmul(self.w[l-1],Fx) + self.b[l-1]
+
+            if np.isnan(torch.min(x[l])):
+                print(f"Is nan:")
 
         return x
 
@@ -299,7 +311,8 @@ class PcTorch:
         e = {}
         previous_error = torch.zeros(self.batch_size) # square of the sum of the of error neurons 
         for l in range(1,self.n_layers):
-            e[l] = x[l] - torch.matmul(self.w[l-1], self.F(x[l-1]) ) - self.b[l-1]
+            fx = self.F(x[l-1])
+            e[l] = x[l] - torch.matmul(self.w[l-1], fx ) - self.b[l-1]
             previous_error += torch.square(torch.sum(e[l], 0))
 
         # Inference loop
@@ -315,16 +328,17 @@ class PcTorch:
             # Update E 
             for l in range(1, self.n_layers):
                 e[l] = x[l] - torch.matmul( self.w[l-1], self.F(x[l-1])) - self.b[l-1]
-                current_error += torch.square(torch.sum(e[l], 0))
+                current_error += torch.sum(torch.square(e[l]), 0)
 
-            # Check if ANY error increased after inference
-            if torch.gt( current_error, previous_error ).sum().type(torch.bool):
+            # Check if more than 1 error increased after inference
+            if torch.gt( current_error, previous_error ).sum()>1:
                 update_rate = update_rate/2 # decrease update rate
             
             # Check if minimum error difference condition has been met
             if torch.abs(torch.mean(current_error - previous_error)) < self.min_inference_error:
                 break
 
+            previous_error = current_error
         return x, e
 
     def gradients(self, x, e):
@@ -343,7 +357,8 @@ class PcTorch:
 
         for l in range(self.n_layers-1):
             b_dot[l] = torch.sum(e[l+1], 1).view(-1, 1)/self.batch_size # make column vector
-            w_dot[l] = torch.matmul( e[l+1], self.dF(x[l]).transpose(0,1) )/self.batch_size
+            FXs = self.F(x[l])
+            w_dot[l] = torch.matmul(e[l+1] , FXs.transpose(0,1) )/self.batch_size
 
         return w_dot, b_dot
 
@@ -357,6 +372,17 @@ class PcTorch:
         """
 
         dw,db = self.gradients(x,e)
+        vdb = {}
+        vdw = {}
+        sdb = {}
+        sdw = {}
+
+        for key in self.vdb:
+            vdb[key] = torch.clone(self.vdb[key])
+            vdw[key] = torch.clone(self.vdw[key])
+            sdb[key] = torch.clone(self.sdb[key])
+            sdw[key] = torch.clone(self.sdw[key])
+
         for l in range(self.n_layers-1):
 
             # Switch optimizer
@@ -365,20 +391,28 @@ class PcTorch:
                 self.b[l] += 0.05*db[l]
 
             elif self.optimizer == 'adam':
-                self.vdw[l] = self.b1*self.vdw[l] + (1-self.b1)*dw[l]
-                self.vdb[l] = self.b1*self.vdb[l] + (1-self.b1)*db[l]
-                self.sdw[l] = self.b2*self.sdw[l] + (1-self.b2)*(dw[l].square())
-                self.sdb[l] = self.b2*self.sdb[l] + (1-self.b2)*(db[l].square())
+                vdb[l] = self.b1*vdb[l] + (1-self.b1)*db[l]
+                vdw[l] = self.b1*vdw[l] + (1-self.b1)*dw[l]
                 
-                vdw_corr = self.vdw[l]/(1 - self.b1**self.t)
-                vdb_corr = self.vdb[l]/(1 - self.b1**self.t)
-                sdw_corr = self.sdw[l]/(1 - self.b2**self.t)
-                sdb_corr = self.sdb[l]/(1 - self.b2**self.t)
+                sdb[l] = self.b2*sdb[l] + (1-self.b2)*(db[l].square())
+                sdw[l] = self.b2*sdw[l] + (1-self.b2)*(dw[l].square())
+                
+                #vdb_corr = vdb[l]/(1 - self.b1**self.t)
+                #vdw_corr = vdw[l]/(1 - self.b1**self.t)
+                #sdb_corr = sdb[l]/(1 - self.b2**self.t)
+                #sdw_corr = sdw[l]/(1 - self.b2**self.t)
+                #self.b[l] = self.b[l] + self.alpha*vdb_corr/(torch.sqrt(sdb_corr) + self.epslon)
+                #self.w[l] = self.w[l] + self.alpha*vdw_corr/(torch.sqrt(sdw_corr) + self.epslon)
 
-                self.w[l] = self.w[l] + self.alpha*vdw_corr/(torch.sqrt(sdw_corr) + self.epslon)
-                self.b[l] = self.b[l] + self.alpha*vdb_corr/(torch.sqrt(sdb_corr) + self.epslon)
-
+                x1 = self.alpha * np.sqrt(1 - self.b2**self.t) / (1 - self.b1**self.t) 
+                self.b[l] = self.b[l] + x1* torch.div( vdb[l] , (torch.sqrt(sdb[l]) + self.epslon))
+                self.w[l] = self.w[l] + x1* torch.div( vdw[l] , (torch.sqrt(sdw[l]) + self.epslon)) 
                 self.t += 1
+
+        self.vdb = vdb
+        self.vdw = vdw
+        self.sdb = sdb
+        self.sdw = sdw
 
     def mse(self, labels_estimated, labels_groundtruth):
         """Calculates mean squared error for network output, given the groundtruth labels with same shape
