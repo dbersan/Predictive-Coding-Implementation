@@ -11,6 +11,7 @@ from snn import util
 NETWORK_ARCHITECTURE = [784,500,500,10]
 BATCH_SIZE = 16
 EPOCHS = 15
+DATA_PERC = 0.2
 INFERENCE_STEPS = 30
 OPTIMIZER = 'none'  
 ACTIVATION='linear'
@@ -59,5 +60,5 @@ model_torch.train(
     max_it=INFERENCE_STEPS,
     optmizer=OPTIMIZER,
     activation=ACTIVATION,
-    dataset_perc = 1.0
+    dataset_perc = DATA_PERC
 )
