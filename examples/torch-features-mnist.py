@@ -67,7 +67,7 @@ model_torch.train(
     max_it=INFERENCE_STEPS,
     optmizer=OPTIMIZER, 
     activation=ACTIVATION,
-    dataset_perc = 0.2
+    dataset_perc = 1.0
 )
 
 
