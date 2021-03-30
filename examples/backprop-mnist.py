@@ -1,7 +1,11 @@
 import numpy as np
 from tensorflow import keras
+import tensorflow.keras.backend as K
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import CSVLogger
+
+def root_mean_squared_error(y_true, y_pred):
+        return K.sqrt(K.mean(K.square(y_pred - y_true))) 
 
 # Model / data parameters
 num_classes = 10
@@ -47,7 +51,7 @@ model = keras.Sequential(
 
 model.summary()
 
-model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+model.compile(loss = "categorical_crossentropy", optimizer="adam", metrics=["accuracy", keras.metrics.RootMeanSquaredError()])
 result = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(x_test, y_test))
 
 print("Train_loss=", end="", flush=True)
