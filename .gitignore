@@ -3,3 +3,4 @@ snn/__pycache__/
 .vscode/
 *.p
 experiments/*
+datasets/*.npz
