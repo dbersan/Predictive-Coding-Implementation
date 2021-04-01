@@ -6,10 +6,14 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.utils import shuffle
-from tensorflow import keras
 import sys
 sys.path.insert(0,'..')
 from snn import util
+
+# tensorflow etc
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.models import Sequential
 
 CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] # Selected classes from dataset
 VALID_PERC = 0.2
@@ -102,4 +106,50 @@ num_classes = len(CLASSES)
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_valid = keras.utils.to_categorical(y_valid, num_classes)
 
+# Define model
+model = Sequential([
+  layers.Input(shape=(IMAGE_SIZE,IMAGE_SIZE,3)),
+  layers.Conv2D(16, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Conv2D(32, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Conv2D(64, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Flatten(),
+  layers.Dense(128, activation='relu'),
+  layers.Dense(num_classes)
+])
 
+
+model.compile(optimizer='adam',
+              loss=keras.losses.CategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy', keras.metrics.RootMeanSquaredError()])
+
+model.summary()
+
+
+# Train
+epochs=1
+batch_size = 16
+
+result = model.fit(
+  x=x_train,
+  y=y_train,
+  batch_size=batch_size,
+  validation_data=(x_valid,y_valid),
+  epochs=epochs
+)
+
+print("Train_loss=", end="", flush=True)
+print(result.history['root_mean_squared_error'])
+# print(result.history['loss'])
+
+print("Train_accuracy=", end="", flush=True)
+print(result.history['acc'])
+
+print("Valid_loss=", end="", flush=True)
+print(result.history['val_root_mean_squared_error'])
+# print(result.history['val_loss'])
+
+print("Valid_accuracy=", end="", flush=True)
+print(result.history['val_acc'])
