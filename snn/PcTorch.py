@@ -10,7 +10,7 @@ from snn import util
 
 class PcTorch:
     dtype = np.float
-    torch_type = torch.double # 'torch_type' has to be the pytorch equivalent of 'dtype' 
+    device = None
 
     ActivationFunctions = {'relu': torch.nn.ReLU(), 'sigmoid': torch.nn.Sigmoid() , 'linear': util.Linear}
     ActivationDerivatives = {'relu': util.dRelu, 'sigmoid': util.dSigmoid, 'linear': util.dLinear}
@@ -29,6 +29,11 @@ class PcTorch:
             - neurons[-1] : output shape
         """
 
+        # Set device
+        PcTorch.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        print("Selected device:", PcTorch.device)
+
+        # Initialize variables
         self.neurons = neurons
         self.n_layers = len(self.neurons)
         assert self.n_layers > 2 
@@ -43,12 +48,12 @@ class PcTorch:
             self.w[l] = (torch.rand(
                 next_layer_neurons,
                 this_layer_neurons,
-                dtype=PcTorch.dtype)-0.5)/11
+                dtype=PcTorch.dtype).to(PcTorch.device) -0.5)/11
 
             self.b[l] = torch.zeros(
                 next_layer_neurons,
                 1,
-                dtype=PcTorch.dtype)
+                dtype=PcTorch.dtype).to(PcTorch.device)
 
         # Optimizer variables (adam)
         self.vdw = {}
@@ -178,8 +183,8 @@ class PcTorch:
         
             # Iterate over the training batches
             for batch_index in range(n_batches):
-                train_data = self.train_data[batch_index]
-                train_labels = self.train_labels[batch_index]
+                train_data = self.train_data[batch_index].to(PcTorch.device)
+                train_labels = self.train_labels[batch_index].to(PcTorch.device)
 
                 # Feedforward
                 x = self.feedforward(train_data)
@@ -192,18 +197,18 @@ class PcTorch:
                 self.update_weights(x,e)
 
                 if batch_index %100 == 0:
-                    print(f"batch: {batch_index+1}/{n_batches}")
+                    print(f"batch: {batch_index+1}/{PROCESS_BATCH_COUNT}")
 
                 if batch_index> PROCESS_BATCH_COUNT:
                     break
 
-            # Calculate training loss and accuracy
+            # Calculate TRAINING metrics
             predicted = []
             groundtruth = []
             loss = 0
             for batch_index in range(n_batches):
-                train_data = self.train_data[batch_index]
-                train_labels = self.train_labels[batch_index]
+                train_data = self.train_data[batch_index].to(PcTorch.device)
+                train_labels = self.train_labels[batch_index].to(PcTorch.device)
 
                 # Show training loss for current batch
                 x = self.feedforward(train_data)
@@ -212,17 +217,20 @@ class PcTorch:
                 # accuracy
                 predicted.extend(list(torch.argmax(x[out_layer], dim=0)))
                 groundtruth.extend(list(torch.argmax(train_labels, dim=0)))
+
+                if batch_index> PROCESS_BATCH_COUNT:
+                    break
             
             train_accuracy = metrics.accuracy_score(groundtruth, predicted)
 
-            # Calculate validation loss and accuracy
+            # Calculate VALIDATION metrics
             valid_loss=0
             predicted = []
             groundtruth = []
 
             for i in range(len(self.valid_data)):
-                valid_data = self.valid_data[i]
-                valid_labels = self.valid_labels[i]
+                valid_data = self.valid_data[i].to(PcTorch.device)
+                valid_labels = self.valid_labels[i].to(PcTorch.device)
 
                 x = self.feedforward(valid_data)
                 valid_loss += self.mse(x[out_layer], valid_labels)/len(self.valid_data)
