@@ -64,6 +64,10 @@ if multiple_files:
         dataset = np.load('../datasets/'+name)
         x_batch = dataset['data']
         y_batch = dataset['labels']
+
+        # Select only certain classes
+        x_batch,y_batch = select_classes(x_batch,y_batch, CLASSES)
+
         y = np.concatenate([y, y_batch], axis=0)
         x = np.concatenate([x, x_batch], axis=0)
 
@@ -74,9 +78,6 @@ else:
 
 # Subtract 1 from labels 
 y = np.array([i-1 for i in y])
-
-# Select only certain classes
-x,y = select_classes(x,y, CLASSES)
 
 # Shuffle
 x, y = shuffle(x, y)
