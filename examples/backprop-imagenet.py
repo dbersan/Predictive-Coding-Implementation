@@ -52,7 +52,7 @@ def select_classes(x,y, CLASSES):
 
 # Load data
 dataset = None
-multiple_files = False
+multiple_files = True
 y =np.zeros((0,))
 x = np.zeros((0,IMAGE_SIZE*IMAGE_SIZE*3))
 
@@ -75,6 +75,9 @@ else:
     dataset = np.load('../datasets/val_data.npz')
     x = dataset['data']
     y = dataset['labels']
+
+    # Select only certain classes
+    x,y = select_classes(x,y, CLASSES)
 
 # Subtract 1 from labels 
 y = np.array([i-1 for i in y])

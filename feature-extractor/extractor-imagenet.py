@@ -85,6 +85,9 @@ else:
     x = dataset['data']
     y = dataset['labels']
 
+    # Select only certain classes
+    x,y = select_classes(x,y, CLASSES)
+
 # Subtract 1 from labels 
 y = np.array([i-1 for i in y])
 

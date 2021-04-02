@@ -196,7 +196,7 @@ class PcTorch:
                 # Update weightsx
                 self.update_weights(x,e)
 
-                if batch_index %100 == 0:
+                if batch_index %10 == 0:
                     print(f"batch: {batch_index+1}/{PROCESS_BATCH_COUNT}")
 
                 if batch_index> PROCESS_BATCH_COUNT:
