@@ -52,7 +52,7 @@ def select_classes(x,y, CLASSES):
 
 # Load data
 dataset = None
-multiple_files = True
+multiple_files = False
 y =np.zeros((0,))
 x = np.zeros((0,IMAGE_SIZE*IMAGE_SIZE*3))
 
@@ -139,17 +139,17 @@ result = model.fit(
   validation_data=(x_valid,y_valid),
   epochs=epochs
 )
-
+accuracy_txt = 'accuracy'
 print("Train_loss=", end="", flush=True)
 print(result.history['root_mean_squared_error'])
 # print(result.history['loss'])
 
 print("Train_accuracy=", end="", flush=True)
-print(result.history['acc'])
+print(result.history[accuracy_txt])
 
 print("Valid_loss=", end="", flush=True)
 print(result.history['val_root_mean_squared_error'])
 # print(result.history['val_loss'])
 
 print("Valid_accuracy=", end="", flush=True)
-print(result.history['val_acc'])
+print(result.history['val_'+accuracy_txt])
