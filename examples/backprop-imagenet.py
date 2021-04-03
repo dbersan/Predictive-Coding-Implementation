@@ -6,14 +6,16 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.utils import shuffle
-import sys
-sys.path.insert(0,'..')
-from snn import util
+import datetime
 
 # tensorflow etc
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
+
+import sys
+sys.path.insert(0,'..')
+from snn import util
 
 # Dataset Parameters
 CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] 
@@ -129,12 +131,15 @@ model = Sequential([
   layers.Dense(num_classes)
 ])
 
-
 model.compile(optimizer='adam',
               loss=keras.losses.CategoricalCrossentropy(from_logits=True),
               metrics=['accuracy', keras.metrics.RootMeanSquaredError()])
 
 model.summary()
+
+# Get time before training
+t_start = datetime.datetime.now()
+print("Starting timer")
 
 result = model.fit(
   x=x_train,
@@ -157,3 +162,10 @@ print(result.history['val_root_mean_squared_error'])
 
 print("Valid_accuracy=", end="", flush=True)
 print(result.history['val_'+accuracy_txt])
+
+# Get time after training
+t_end = datetime.datetime.now()
+elapsedTime = (t_end - t_start )
+dt_sec = elapsedTime.total_seconds()
+
+print(f"Training time per epoch: {dt_sec/EPOCHS}")

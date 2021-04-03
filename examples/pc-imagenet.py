@@ -6,6 +6,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.utils import shuffle
+import datetime
 
 # tensorflow etc
 from tensorflow import keras
@@ -20,7 +21,7 @@ from snn import util
 # Dataset Parameters
 CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
 NUM_CLASSES = len(CLASSES)
-DATASET_BATCH_COUNT = 6
+DATASET_BATCH_COUNT = 8
 SUB_MEAN=False # sigmoid doesn't work if subtract mean
 IMAGE_SIZE = 32
 VALID_PERC = 0.2
@@ -29,7 +30,7 @@ VALID_PERC = 0.2
 NETWORK_ARCHITECTURE = [3072, 500, 500, NUM_CLASSES]
 BATCH_SIZE = 16
 EPOCHS=1
-DATA_PERC = 0.2
+DATA_PERC = 1.0
 INFERENCE_STEPS = 40
 OPTIMIZER = 'adam'  
 ACTIVATION='sigmoid'
@@ -121,6 +122,10 @@ for i in range(len(x_train)):
 for i in range(len(x_valid)):
     x_valid_list.append(x_valid[i].flatten().astype(np.float))
 
+# Get time before training
+t_start = datetime.datetime.now()
+print("Starting timer")
+
 # Initialize network and train
 model_torch = PcTorch(NETWORK_ARCHITECTURE)
 model_torch.train(
@@ -135,3 +140,10 @@ model_torch.train(
     activation=ACTIVATION,
     dataset_perc = DATA_PERC
 )
+
+# Get time after training
+t_end = datetime.datetime.now()
+elapsedTime = (t_end - t_start )
+dt_sec = elapsedTime.total_seconds()
+
+print(f"Training time per epoch: {dt_sec/EPOCHS}")

@@ -3,13 +3,21 @@ from tensorflow import keras
 import tensorflow.keras.backend as K
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import CSVLogger
+import datetime
+
+# Dataset Parameters
+NUM_CLASSES = 10
+IMAGE_SIZE = 28
+
+# Train parameters
+BATCH_SIZE = 16
+EPOCHS = 1
+DATA_PERC = 0.2
+
 
 def root_mean_squared_error(y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true))) 
 
-# Model / data parameters
-num_classes = 10
-input_shape = (28, 28, 1)
 
 # the data, split between train and test sets
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -24,35 +32,41 @@ print("x_train shape:", x_train.shape)
 print(x_train.shape[0], "train samples")
 print(x_test.shape[0], "test samples")
 
-
-batch_size = 16
-epochs = 15
-fraction = 1.0
-
 # Train only fraction of data
 train_samples = x_train.shape[0]
-max_index = int(np.floor(train_samples*fraction))
+max_index = int(np.floor(train_samples*DATA_PERC))
 x_train = x_train[0:max_index, ...]
 y_train = y_train[0:max_index, ...]
 
 # convert class vectors to binary class matrices
-y_train = keras.utils.to_categorical(y_train, num_classes)
-y_test = keras.utils.to_categorical(y_test, num_classes)
+y_train = keras.utils.to_categorical(y_train, NUM_CLASSES)
+y_test = keras.utils.to_categorical(y_test, NUM_CLASSES)
 
 model = keras.Sequential(
     [
-        keras.Input(shape=input_shape),
+        keras.Input(shape=(IMAGE_SIZE,IMAGE_SIZE,1)),
         layers.Flatten(),
         layers.Dense(500),
         layers.Dense(500),
-        layers.Dense(num_classes, activation="softmax")
+        layers.Dense(NUM_CLASSES, activation="softmax")
     ]
 )
 
 model.summary()
 
-model.compile(loss = "categorical_crossentropy", optimizer="adam", metrics=["accuracy", keras.metrics.RootMeanSquaredError()])
-result = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_data=(x_test, y_test))
+model.compile(loss = "categorical_crossentropy", 
+    optimizer="adam", 
+    metrics=["accuracy", keras.metrics.RootMeanSquaredError()])
+
+# Get time before training
+t_start = datetime.datetime.now()
+print("Starting timer")
+
+result = model.fit(x_train, 
+    y_train, 
+    batch_size=BATCH_SIZE, 
+    epochs=EPOCHS, 
+    validation_data=(x_test, y_test))
 
 print("Train_loss=", end="", flush=True)
 print(result.history['loss'])
@@ -66,15 +80,9 @@ print(result.history['val_loss'])
 print("Valid_accuracy=", end="", flush=True)
 print(result.history['val_accuracy'])
 
+# Get time after training
+t_end = datetime.datetime.now()
+elapsedTime = (t_end - t_start )
+dt_sec = elapsedTime.total_seconds()
 
-
-
-
-
-
-
-
-
-
-
-
+print(f"Training time per epoch: {dt_sec/EPOCHS}")

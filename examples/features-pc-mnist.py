@@ -1,6 +1,7 @@
 import tensorflow
 import numpy as np
 import pickle
+import datetime
 
 import sys
 sys.path.insert(0,'..')
@@ -56,6 +57,10 @@ for i in range(len(x_test)):
 x_train_list, mi, ma = util.normalize_dataset(x_train_list)
 x_test_list, mi, ma = util.normalize_dataset(x_test_list)
 
+# Get time before training
+t_start = datetime.datetime.now()
+print("Starting timer")
+
 # Initialize network and train
 model_torch = PcTorch(NETWORK_ARCHITECTURE)
 model_torch.train(
@@ -71,4 +76,9 @@ model_torch.train(
     dataset_perc = DATA_PERC
 )
 
+# Get time after training
+t_end = datetime.datetime.now()
+elapsedTime = (t_end - t_start )
+dt_sec = elapsedTime.total_seconds()
 
+print(f"Training time per epoch: {dt_sec/EPOCHS}")
