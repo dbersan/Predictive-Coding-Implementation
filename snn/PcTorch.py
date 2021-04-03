@@ -196,7 +196,7 @@ class PcTorch:
                 # Update weightsx
                 self.update_weights(x,e)
 
-                if batch_index %10 == 0:
+                if batch_index %50 == 0:
                     print(f"batch: {batch_index+1}/{PROCESS_BATCH_COUNT}")
 
                 if batch_index> PROCESS_BATCH_COUNT:
@@ -206,20 +206,20 @@ class PcTorch:
             predicted = []
             groundtruth = []
             loss = 0
-            for batch_index in range(n_batches):
+            for batch_index in range(PROCESS_BATCH_COUNT):
                 train_data = self.train_data[batch_index].to(PcTorch.device)
                 train_labels = self.train_labels[batch_index].to(PcTorch.device)
 
                 # Show training loss for current batch
                 x = self.feedforward(train_data)
-                loss += self.mse(x[out_layer], train_labels)/n_batches
+                loss += self.mse(x[out_layer], train_labels)/PROCESS_BATCH_COUNT
 
                 # accuracy
                 predicted.extend(list(torch.argmax(x[out_layer], dim=0)))
                 groundtruth.extend(list(torch.argmax(train_labels, dim=0)))
 
-                if batch_index> PROCESS_BATCH_COUNT:
-                    break
+                # if batch_index> PROCESS_BATCH_COUNT:
+                #     break
             
             train_accuracy = metrics.accuracy_score(groundtruth, predicted)
 
@@ -252,7 +252,8 @@ class PcTorch:
             self.valid_loss_h.append(valid_loss)
             self.valid_acc_h.append(valid_accuracy*100.0)
 
-        print("Finished training")
+        print("\n-------------------------------------")
+        print("Results:")
 
         print("Train_loss=", end="", flush=True)
         print(self.train_loss_h)
@@ -462,8 +463,11 @@ class PcTorch:
         Returns: 
             The mean squared error of the estimation to the groundtruth for each sample, summed over the samples of the batch (i.e., a scalar is returned)
 
+        Source: 
+            Adapted from https://discuss.pytorch.org/t/rmse-loss-function/16540/2
+
         """
-        return torch.square(labels_estimated - labels_groundtruth).mean(0).sum().numpy()/self.batch_size
+        return torch.sqrt(torch.mean((labels_estimated - labels_groundtruth)**2)).item()
 
     def test_sample(self, input):
         """Performs a forward pass on a single sample
