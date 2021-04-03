@@ -67,7 +67,7 @@ class PcTorch:
             self.sdw[l] = torch.zeros(self.w[l].shape)
             self.sdb[l] = torch.zeros(self.b[l].shape)
 
-        self.alpha = 0.001
+        self.alpha = 0.01
         self.b1 = 0.9
         self.b2 = 0.999
         self.epslon = 0.00000001
@@ -87,7 +87,8 @@ class PcTorch:
         max_it=10, 
         activation='relu', 
         optmizer='none',
-        dataset_perc = 1.0
+        dataset_perc = 1.0,
+        learning_rate=0.001
     ):
         """Trains the network weights using predictive coding. 
 
@@ -131,6 +132,9 @@ class PcTorch:
         if activation not in PcTorch.ActivationFunctions:
             activation = PcTorch.ActivationFunctions[0]
         
+        # Learning rate 
+        self.alpha = learning_rate
+
         # Define activation function
         self.F = PcTorch.ActivationFunctions[activation]
         self.dF = PcTorch.ActivationDerivatives[activation]
