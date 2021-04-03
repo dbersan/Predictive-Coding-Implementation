@@ -15,10 +15,17 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 
-CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] # Selected classes from dataset
-VALID_PERC = 0.2
-DATA_PERC = 1.0
+# Dataset Parameters
+CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] 
+DATASET_BATCH_COUNT = 6
+SUB_MEAN=True
 IMAGE_SIZE = 32
+VALID_PERC = 0.2
+
+# Train parameters
+BATCH_SIZE = 16
+EPOCHS=1
+DATA_PERC = 1.0
 
 def get_images(data, img_size, subtract_mean=False):
     # Returns the dataset with image format, instead of flat array
@@ -28,8 +35,7 @@ def get_images(data, img_size, subtract_mean=False):
     data = data/np.float32(255)
     
     if subtract_mean:
-        mean_image = np.mean(data, axis=1)
-        mean_image = mean_image/np.float32(255)
+        mean_image = np.mean(data, axis=0)
         data -= mean_image
 
     img_size2 = img_size * img_size
@@ -57,7 +63,7 @@ y =np.zeros((0,))
 x = np.zeros((0,IMAGE_SIZE*IMAGE_SIZE*3))
 
 if multiple_files:
-    count = 4 # set to 10 when training on the full dataset
+    count = 6# set to 10 when training on the full dataset
     prefix = 'train_data_batch_'
     for i in range(1, count+1):
         name = prefix + str(i) + '.npz'
@@ -86,9 +92,8 @@ y = np.array([i-1 for i in y])
 x, y = shuffle(x, y)
 
 # Convert x to images (optional, use for convolutions)
-sub_mean= False
-x = get_images(x, IMAGE_SIZE, subtract_mean=sub_mean)
-if not sub_mean: 
+x = get_images(x, IMAGE_SIZE, subtract_mean=SUB_MEAN)
+if not SUB_MEAN: 
     # show image sample
     plt.imshow(x[0], interpolation='nearest')
     plt.show()
@@ -120,7 +125,7 @@ model = Sequential([
   layers.Conv2D(64, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
   layers.Flatten(),
-  layers.Dense(128, activation='relu'),
+  layers.Dense(500, activation='relu'),
   layers.Dense(num_classes)
 ])
 
@@ -131,17 +136,12 @@ model.compile(optimizer='adam',
 
 model.summary()
 
-
-# Train
-epochs=1
-batch_size = 16
-
 result = model.fit(
   x=x_train,
   y=y_train,
-  batch_size=batch_size,
+  batch_size=BATCH_SIZE,
   validation_data=(x_valid,y_valid),
-  epochs=epochs
+  epochs=EPOCHS
 )
 accuracy_txt = 'accuracy'
 print("Train_loss=", end="", flush=True)

@@ -12,9 +12,7 @@ NETWORK_ARCHITECTURE = [784,500,500,10]
 BATCH_SIZE = 16
 EPOCHS = 15
 DATA_PERC = 0.2
-INFERENCE_STEPS = 30
-OPTIMIZER = 'none'  
-ACTIVATION='linear'
+INFERENCE_STEPS = 40
 OPTIMIZER = 'adam'  
 ACTIVATION='sigmoid'
 
@@ -48,7 +46,7 @@ for i in range(len(x_test)):
 x_train_list, mi, ma = util.normalize_dataset(x_train_list)
 x_test_list, mi, ma = util.normalize_dataset(x_test_list)
 
-# Initialize network
+# Initialize network and train
 model_torch = PcTorch(NETWORK_ARCHITECTURE)
 model_torch.train(
     x_train_list, 

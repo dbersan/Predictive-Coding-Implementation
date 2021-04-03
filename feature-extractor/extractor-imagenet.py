@@ -14,10 +14,12 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import VGG16
 
-CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] # Selected classes from dataset
-VALID_PERC = 0.2
-DATA_PERC = 1.0
+# Dataset Parameters
+CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] 
+DATASET_BATCH_COUNT = 6
+SUB_MEAN=True
 IMAGE_SIZE = 32
+VALID_PERC = 0.2 
 
 def get_images(data, img_size, subtract_mean=False):
     # Returns the dataset with image format, instead of flat array
@@ -27,8 +29,7 @@ def get_images(data, img_size, subtract_mean=False):
     data = data/np.float32(255)
     
     if subtract_mean:
-        mean_image = np.mean(data, axis=1)
-        mean_image = mean_image/np.float32(255)
+        mean_image = np.mean(data, axis=0)
         data -= mean_image
 
     img_size2 = img_size * img_size
@@ -66,7 +67,7 @@ y =np.zeros((0,))
 x = np.zeros((0,IMAGE_SIZE*IMAGE_SIZE*3))
 
 if multiple_files:
-    count = 4 # set to 10 when training on the full dataset
+    count = 6 # set to 10 when training on the full dataset
     prefix = 'train_data_batch_'
     for i in range(1, count+1):
         name = prefix + str(i) + '.npz'
@@ -95,9 +96,8 @@ y = np.array([i-1 for i in y])
 x, y = shuffle(x, y)
 
 # Convert x to images (optional, use for convolutions)
-sub_mean= False
-x = get_images(x, IMAGE_SIZE, subtract_mean=sub_mean)
-if not sub_mean: 
+x = get_images(x, IMAGE_SIZE, subtract_mean=SUB_MEAN)
+if not SUB_MEAN: 
     # show image sample
     plt.imshow(x[0], interpolation='nearest')
     plt.show()
