@@ -17,7 +17,7 @@ from tensorflow.keras.applications import VGG16
 # Dataset Parameters
 CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] 
 DATASET_BATCH_COUNT = 6
-SUB_MEAN=True
+SUB_MEAN=False
 IMAGE_SIZE = 32
 VALID_PERC = 0.2 
 
@@ -67,7 +67,7 @@ y =np.zeros((0,))
 x = np.zeros((0,IMAGE_SIZE*IMAGE_SIZE*3))
 
 if multiple_files:
-    count = 6 # set to 10 when training on the full dataset
+    count = DATASET_BATCH_COUNT # set to 10 when training on the full dataset
     prefix = 'train_data_batch_'
     for i in range(1, count+1):
         name = prefix + str(i) + '.npz'
