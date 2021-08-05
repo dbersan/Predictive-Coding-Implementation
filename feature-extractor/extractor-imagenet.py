@@ -35,7 +35,7 @@ def get_images(data, img_size, subtract_mean=False):
     img_size2 = img_size * img_size
 
     data = np.dstack((data[:, :img_size2], data[:, img_size2:2*img_size2], data[:, 2*img_size2:]))
-    data = data.reshape((x.shape[0], img_size, img_size, 3)).transpose(0, 1, 2, 3)
+    data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 1, 2, 3)
 
     return data
 
@@ -63,7 +63,7 @@ conv_base = VGG16(weights='imagenet',
 # Load data
 dataset = None
 multiple_files = True
-y =np.zeros((0,))
+y = np.zeros((0,))
 x = np.zeros((0,IMAGE_SIZE*IMAGE_SIZE*3))
 
 if multiple_files:

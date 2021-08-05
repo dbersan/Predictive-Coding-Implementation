@@ -1,0 +1,67 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Fit Generated",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/torch-generated-data.py",
+            "cwd": "${workspaceFolder}/examples",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Fit MNIST",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/torch-mnist.py",
+            "cwd": "${workspaceFolder}/examples",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Feature Extractor",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/feature-extractor/extractor.py",
+            "cwd": "${workspaceFolder}/examples",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Backprop Imagenet",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/backprop-imagenet.py",
+            "cwd": "${workspaceFolder}/examples",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Backprop MNIST",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/backprop-mnist.py",
+            "cwd": "${workspaceFolder}/examples",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "PC Imagenet",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/pc-imagenet.py",
+            "cwd": "${workspaceFolder}/examples",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "64x64 Backprop",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples-ImNet64x64/backprop-transfer-learning.py",
+            "cwd": "${workspaceFolder}/examples-ImNet64x64",
+            "console": "integratedTerminal"
+        }
+    ]
+}

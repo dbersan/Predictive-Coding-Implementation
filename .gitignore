@@ -1,7 +1,7 @@
 snn/__pycache__/
 *.csv
-.vscode/
 *.p
 experiments/*
 !experiments/*.m
 datasets/*.npz
+*.pyc

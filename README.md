@@ -8,4 +8,18 @@ Meanwhile, top-bottom (feedback) connections generate the predicted input given 
 
 There are many flavors of the Predictive Coding framework, and one in particular is a simple classifier for a static input network (that is, the input data does not contain a temporal dimension). 
 
+## Run Latest Model 
+
+We compare the performance of a typical Backprop network againt the Predictive Coding implementation, on the Imagenet 64x64 dataset. 
+
+To run these exaples, you'll need at least around 16 Gb of *free* RAM, because the whole dataset needs to fit into memory. Otherwise, you may easily select a subset of the data by modifying the code. 
+
+1. Download the `Train(64x64) part1`, `Train(64x64) part2` and `Val(64x64)` (select `npz format`) from the [imagenet website](https://image-net.org/download-images). Extract inside `datasets/imagenet-64x64/`.
+
+2. To run the Backpropagation network, run...
+
+3. To run the Predictive Coding network, run...
+
+
+
 
