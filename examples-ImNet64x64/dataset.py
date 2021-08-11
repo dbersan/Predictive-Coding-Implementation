@@ -7,7 +7,7 @@ class Dataset(torch.utils.data.Dataset):
 
         # Variables to hold dataset data
         self.y = np.zeros((0,), dtype=np.int)
-        self.x = np.zeros((0,image_size,image_size,3))
+        self.x = np.zeros((0,3,image_size,image_size), dtype=np.float)
         self.image_size = image_size
 
         # Read dataset
@@ -20,6 +20,7 @@ class Dataset(torch.utils.data.Dataset):
 
             self.y = np.concatenate([self.y, y_batch], axis=0)
             self.x = np.concatenate([self.x, x_batch], axis=0)
+
     def __len__(self):
         'Denotes the total number of samples'
         return self.y.shape[0]
@@ -43,6 +44,10 @@ class Dataset(torch.utils.data.Dataset):
         img_size2 = img_size * img_size
 
         data = np.dstack((data[:, :img_size2], data[:, img_size2:2*img_size2], data[:, 2*img_size2:]))
-        data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 1, 2, 3)
+        # Tesnsorflow image shape
+        #data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 1, 2, 3)
+
+        # Pytorch shape
+        data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 3, 1, 2).astype(np.float)
 
         return data
