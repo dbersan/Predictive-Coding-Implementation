@@ -5,58 +5,79 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.utils import shuffle
 import torch
-
+import torch.nn as nn
+import torchvision.models as models
+from torchinfo import summary
 from dataset import Dataset
 
+# Set PyTorch device
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Dataset Parameters
-DATASET_BATCH_COUNT = 1
+DATASET_TRAIN_BATCH_COUNT = 1
+DATASET_VALID_BATCH_COUNT = 1
 IMAGE_SIZE = 64
 VALID_PERC = 0.2 
+TRAIN_BATCH_SIZE = 16
 FOLDER = '../datasets/imagenet-64x64/'
 PREFIX = 'train_data_batch_'
 SUFFIX = '.npz'
 
-def get_images(data, img_size, subtract_mean=False):
-    # Returns the dataset with image format, instead of flat array
-    # Useful for convolutional networks
-
-    # Normalize
-    data = data/np.float32(255)
-    
-    if subtract_mean:
-        mean_image = np.mean(data, axis=0)
-        data -= mean_image
-
-    img_size2 = img_size * img_size
-
-    data = np.dstack((data[:, :img_size2], data[:, img_size2:2*img_size2], data[:, 2*img_size2:]))
-    data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 1, 2, 3)
-
-    return data
-
 # Variables to hold dataset data
 y = np.zeros((0,))
-x = np.zeros((0,IMAGE_SIZE,IMAGE_SIZE,3))
+x = np.zeros((0,3,IMAGE_SIZE,IMAGE_SIZE))
 
 # Dataset files
 file_paths_train = []
-for i in range(1, DATASET_BATCH_COUNT+1):
+for i in range(1, DATASET_TRAIN_BATCH_COUNT+1):
     file = FOLDER+PREFIX+str(i)+SUFFIX
     file_paths_train.append(file)
 
+file_paths_valid = []
+for i in range(DATASET_TRAIN_BATCH_COUNT+1, 
+    DATASET_TRAIN_BATCH_COUNT+DATASET_VALID_BATCH_COUNT+1):
+    file = FOLDER+PREFIX+str(i)+SUFFIX
+    file_paths_valid.append(file)
 
 # Datasets
-params = {'batch_size': 16,
+params = {'batch_size': TRAIN_BATCH_SIZE,
           'shuffle': True,
           'num_workers': 6}
 
 # Training data
 train_dataset = Dataset(file_paths_train, IMAGE_SIZE)
-training_generator = torch.utils.data.DataLoader(train_dataset, **params)
+train_generator = torch.utils.data.DataLoader(train_dataset, **params)
 
-for x_batch, y_batch in training_generator:
-    pass
+# Valid data
+valid_dataset=None
+valid_generator=None
+if len(file_paths_valid) > 0:
+    valid_dataset = Dataset(file_paths_valid, IMAGE_SIZE)
+    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params)
+
+# Models declaration, architecture, etc
+
+# Pre-trained model for Transfer Learning
+# vgg16 = models.vgg16()
+resnet = models.resnet152()
+num_ftrs = resnet.fc.in_features # Number of features before FC
+modules = list(resnet.children())[:-1]
+resnet = nn.Sequential(*modules)
+for p in resnet.parameters():
+    p.requires_grad = False
+summary(resnet, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
+
+# Fully connected layer model
+
+
+
+for x_batch, y_batch in train_generator:
+
+    x_batch = x_batch.to(device).float()
+    y_batch = y_batch.to(device)
+
+
+    break
 
 
 
