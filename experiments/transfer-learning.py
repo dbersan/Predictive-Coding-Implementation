@@ -8,7 +8,10 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchinfo import summary
-from dataset import Dataset
+
+import sys
+sys.path.append('.')
+from snn.Dataset import Dataset
 
 # Set PyTorch device
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -19,7 +22,7 @@ DATASET_VALID_BATCH_COUNT = 1
 IMAGE_SIZE = 64
 VALID_PERC = 0.2 
 TRAIN_BATCH_SIZE = 16
-FOLDER = '../datasets/imagenet-64x64/'
+FOLDER = 'datasets/imagenet-64x64/'
 PREFIX = 'train_data_batch_'
 SUFFIX = '.npz'
 
@@ -75,6 +78,7 @@ for x_batch, y_batch in train_generator:
 
     x_batch = x_batch.to(device).float()
     y_batch = y_batch.to(device)
+
 
 
     break

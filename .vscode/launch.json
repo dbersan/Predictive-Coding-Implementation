@@ -8,16 +8,16 @@
             "name": "Fit Generated",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/examples/torch-generated-data.py",
-            "cwd": "${workspaceFolder}/examples",
+            "program": "${workspaceFolder}/old-experiments/torch-generated-data.py",
+            "cwd": "${workspaceFolder}/old-experiments",
             "console": "integratedTerminal"
         },
         {
             "name": "Fit MNIST",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/examples/torch-mnist.py",
-            "cwd": "${workspaceFolder}/examples",
+            "program": "${workspaceFolder}/old-experiments/torch-mnist.py",
+            "cwd": "${workspaceFolder}/old-experiments",
             "console": "integratedTerminal"
         },
         {
@@ -25,15 +25,15 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/feature-extractor/extractor.py",
-            "cwd": "${workspaceFolder}/examples",
+            "cwd": "${workspaceFolder}/old-experiments",
             "console": "integratedTerminal"
         },
         {
             "name": "Backprop Imagenet",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/examples/backprop-imagenet.py",
-            "cwd": "${workspaceFolder}/examples",
+            "program": "${workspaceFolder}/old-experiments/backprop-imagenet.py",
+            "cwd": "${workspaceFolder}/old-experiments",
             "console": "integratedTerminal"
         },
 
@@ -41,8 +41,8 @@
             "name": "Backprop MNIST",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/examples/backprop-mnist.py",
-            "cwd": "${workspaceFolder}/examples",
+            "program": "${workspaceFolder}/old-experiments/backprop-mnist.py",
+            "cwd": "${workspaceFolder}/old-experiments",
             "console": "integratedTerminal"
         },
 
@@ -50,8 +50,8 @@
             "name": "PC Imagenet",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/examples/pc-imagenet.py",
-            "cwd": "${workspaceFolder}/examples",
+            "program": "${workspaceFolder}/old-experiments/pc-imagenet.py",
+            "cwd": "${workspaceFolder}/old-experiments",
             "console": "integratedTerminal"
         },
 
@@ -59,8 +59,8 @@
             "name": "64x64 Backprop",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/examples-ImNet64x64/backprop-transfer-learning.py",
-            "cwd": "${workspaceFolder}/examples-ImNet64x64",
+            "program": "${workspaceFolder}/experiments/transfer-learning.py",
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         }
     ]
