@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 class Dataset(torch.utils.data.Dataset):
 
@@ -7,7 +8,7 @@ class Dataset(torch.utils.data.Dataset):
 
         # Variables to hold dataset data
         self.y = np.zeros((0,), dtype=np.int)
-        self.x = np.zeros((0,3,image_size,image_size), dtype=np.float)
+        self.x = np.zeros((0,3,image_size,image_size), dtype=np.uint8) # using uint8 to fit dataset in memory
         self.image_size = image_size
 
         # Read dataset
@@ -15,6 +16,7 @@ class Dataset(torch.utils.data.Dataset):
             dataset = np.load(path)
             x_batch = dataset['data']
             y_batch = dataset['labels']
+            y_batch = y_batch-1 # indices 0 ... 999
 
             x_batch = self.get_images(x_batch, self.image_size)
 
@@ -35,7 +37,7 @@ class Dataset(torch.utils.data.Dataset):
         # Useful for convolutional networks
 
         # Normalize
-        data = data/np.float32(255)
+        # data = data/np.float32(255)
         
         if subtract_mean:
             mean_image = np.mean(data, axis=0)
@@ -48,6 +50,6 @@ class Dataset(torch.utils.data.Dataset):
         #data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 1, 2, 3)
 
         # Pytorch shape
-        data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 3, 1, 2).astype(np.float)
+        data = data.reshape((data.shape[0], img_size, img_size, 3)).transpose(0, 3, 1, 2).astype(np.uint8)
 
         return data
