@@ -1,7 +1,6 @@
 snn/__pycache__/
 *.csv
 *.p
-results/*
-!results/*.m
+results/graphs/*
 datasets/*.npz
 *.pyc

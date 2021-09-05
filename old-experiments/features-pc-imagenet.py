@@ -13,13 +13,14 @@ NUM_CLASSES = 20
 FEATURES_PATH = '../feature-extractor/imagenet-features.p'
 
 # Train parameters
-NETWORK_ARCHITECTURE = [512,500,NUM_CLASSES]
+NETWORK_ARCHITECTURE = [512,1024,NUM_CLASSES]
 BATCH_SIZE = 16
-EPOCHS = 1
-DATA_PERC = 1.0
+EPOCHS = 15
+DATA_PERC = 0.2
 INFERENCE_STEPS = 40
 OPTIMIZER = 'adam'  
 ACTIVATION='sigmoid'
+LR = 0.001
 
 # Load features
 file = open(FEATURES_PATH,'rb')
@@ -70,7 +71,8 @@ model_torch.train(
     max_it=INFERENCE_STEPS,
     optmizer=OPTIMIZER, 
     activation=ACTIVATION,
-    dataset_perc = DATA_PERC
+    dataset_perc = DATA_PERC,
+    learning_rate=LR
 )
 
 # Get time after training

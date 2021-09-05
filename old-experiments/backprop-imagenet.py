@@ -19,15 +19,16 @@ from snn import util
 
 # Dataset Parameters
 CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19] 
-DATASET_BATCH_COUNT = 6
+DATASET_BATCH_COUNT = 10
 SUB_MEAN=True
 IMAGE_SIZE = 32
 VALID_PERC = 0.2
 
 # Train parameters
 BATCH_SIZE = 16
-EPOCHS=1
-DATA_PERC = 1.0
+EPOCHS=15
+DATA_PERC = 0.2
+LR = 0.001
 
 def get_images(data, img_size, subtract_mean=False):
     # Returns the dataset with image format, instead of flat array
@@ -107,8 +108,8 @@ x_valid = []
 y_valid = []
 if VALID_PERC <= 1.0 and VALID_PERC>0:
     train_index = int(x.shape[0]*(1-VALID_PERC))
-    x_train = x[:train_index]
-    y_train = y[:train_index]
+    x_train = x[:int(train_index*DATA_PERC)]
+    y_train = y[:int(train_index*DATA_PERC)]
     x_valid = x[train_index:]
     y_valid = y[train_index:]
 
@@ -120,19 +121,26 @@ y_valid = keras.utils.to_categorical(y_valid, num_classes)
 # Define model
 model = Sequential([
   layers.Input(shape=(IMAGE_SIZE,IMAGE_SIZE,3)),
-  layers.Conv2D(16, 3, padding='same', activation='relu'),
-  layers.MaxPooling2D(),
-  layers.Conv2D(32, 3, padding='same', activation='relu'),
-  layers.MaxPooling2D(),
   layers.Conv2D(64, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
+  layers.Conv2D(128, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Conv2D(256, 3, padding='same', activation='relu'),
+  layers.Conv2D(256, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Conv2D(512, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
   layers.Flatten(),
-  layers.Dense(500, activation='relu'),
-  layers.Dense(num_classes)
+  layers.Dense(1024, activation='relu'),
+  layers.Dropout(0.3),
+#   layers.Dense(500, activation='relu'),
+#   layers.Dropout(0.3),
+  layers.Dense(num_classes, activation='softmax')
 ])
 
-model.compile(optimizer='adam',
-              loss=keras.losses.CategoricalCrossentropy(from_logits=True),
+opt = keras.optimizers.Adam(learning_rate=LR)
+model.compile(optimizer=opt,
+              loss=keras.losses.CategoricalCrossentropy(from_logits=False),
               metrics=['accuracy', keras.metrics.RootMeanSquaredError()])
 
 model.summary()

@@ -12,7 +12,7 @@ IMAGE_SIZE = 28
 # Train parameters
 BATCH_SIZE = 16
 EPOCHS = 1
-DATA_PERC = 0.2
+DATA_PERC = 1.0
 
 
 def root_mean_squared_error(y_true, y_pred):

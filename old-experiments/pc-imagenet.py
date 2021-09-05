@@ -21,7 +21,7 @@ from snn import util
 # Dataset Parameters
 CLASSES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
 NUM_CLASSES = len(CLASSES)
-DATASET_BATCH_COUNT = 8
+DATASET_BATCH_COUNT = 10
 SUB_MEAN=False # sigmoid doesn't work if subtract mean
 IMAGE_SIZE = 32
 VALID_PERC = 0.2
@@ -29,11 +29,12 @@ VALID_PERC = 0.2
 # Train parameters
 NETWORK_ARCHITECTURE = [3072, 500, 500, NUM_CLASSES]
 BATCH_SIZE = 16
-EPOCHS=1
-DATA_PERC = 1.0
+EPOCHS=15
+DATA_PERC = 0.2
 INFERENCE_STEPS = 40
 OPTIMIZER = 'adam'  
 ACTIVATION='sigmoid'
+LR = 0.001
 
 def select_classes(x,y, CLASSES):
     indices = []

@@ -16,10 +16,11 @@ NUM_CLASSES = 10
 NETWORK_ARCHITECTURE = [784,500,500,NUM_CLASSES]
 BATCH_SIZE = 16
 EPOCHS = 1
-DATA_PERC = 0.2
+DATA_PERC = 1.0
 INFERENCE_STEPS = 40
 OPTIMIZER = 'adam'  
 ACTIVATION='sigmoid'
+LR = 0.001
 
 # load dataset
 # might yield an error, manually download to ~/.keras/datasets/ instead
@@ -67,7 +68,8 @@ model_torch.train(
     max_it=INFERENCE_STEPS,
     optmizer=OPTIMIZER,
     activation=ACTIVATION,
-    dataset_perc = DATA_PERC
+    dataset_perc = DATA_PERC,
+    learning_rate=LR
 )
 
 # Get time after training
