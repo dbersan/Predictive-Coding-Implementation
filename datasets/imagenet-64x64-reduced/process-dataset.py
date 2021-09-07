@@ -51,7 +51,7 @@ print("Total time: %.2f (seconds)" % total_time.total_seconds())
 
 
 # Save train dataset
-np.savez('datasets/dataset_training_reduced', labels=labels, data=data)
+np.savez('datasets/dataset_training_reduced_1', labels=labels, data=data)
 
 
 # --------------------------------------------
