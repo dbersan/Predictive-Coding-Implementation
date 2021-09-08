@@ -68,7 +68,7 @@
             "name": "Process 64x64 Imagenet",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/datasets/imagenet-64x64-reduced/process-dataset-linkedlist.py",
+            "program": "${workspaceFolder}/datasets/imagenet-64x64-reduced/reduce-dataset.py",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         }

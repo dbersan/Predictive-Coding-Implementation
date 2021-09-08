@@ -13,9 +13,13 @@ PREFIX_VALID = 'val_data'
 SUFFIX = '.npz'
 IMAGE_SIZE = 64
 CHANNELS = 3
-T = 100
-DESIRED_CLASSES=list(range(T,T+20)) # There are about 1280 images per class
+LABEL_SHIFT = 100
+DESIRED_CLASSES=list(range(LABEL_SHIFT,LABEL_SHIFT+20)) # There are about 1280 images per class
 
+# Map labels to keep them sequential, starting from 1, e.g: [1, 2, 3, ...]
+label_map = {}
+for i in range(len(DESIRED_CLASSES)):
+    label_map[DESIRED_CLASSES[i]] = i+1
 
 # Dataset train files
 file_paths_train = []
@@ -48,7 +52,7 @@ labels = np.zeros((items,), dtype=np.int)
 data = np.zeros((items,IMAGE_SIZE*IMAGE_SIZE*CHANNELS), dtype=np.uint8) 
 
 for i, (l, d) in enumerate(llist_label_data):
-    labels[i] = l
+    labels[i] = label_map[l]
     data[i] = d
 
 # Show total processing time
@@ -78,7 +82,7 @@ for path in file_paths_valid:
 
     for i in range(x_batch.shape[0]):
         if y_batch[i] in DESIRED_CLASSES:
-            labels = np.append(labels, y_batch[i])
+            labels = np.append(labels, label_map[y_batch[i]])
             data = np.concatenate((data, x_batch[i:i+1]), axis=0)
 
     pass
