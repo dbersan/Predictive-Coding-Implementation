@@ -22,13 +22,13 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 IMAGE_SIZE = 64
 NUM_CLASSES = 1000
 TRAIN_BATCH_SIZE = 32
-EPOCHS = 6
+EPOCHS = 25
 USE_REDUCED_DATASET = True
 # VALID_PERC = 0.2 # Not used now, validation data is just one of the batches
 
 # Network Parameters
 FC_NEURONS = 2048
-HIDDEN_LAYERS = 2
+HIDDEN_LAYERS = 3
 PRINT_EVERY_N_BATCHES = 2000
 
 # Dataset files
@@ -55,18 +55,14 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
     FILE_PATHS_TRAIN = ['dataset_training_reduced_1']
     FILE_PATHS_VALID = ['dataset_valid_reduced']
     NUM_CLASSES = 20
-    FC_NEURONS = 256
-    PRINT_EVERY_N_BATCHES = 200
+    FC_NEURONS = 256*3
+    PRINT_EVERY_N_BATCHES = 120
 
 
 
-# Make full path
+# Compose full data path
 FILE_PATHS_TRAIN = [FOLDER+file+SUFFIX for file in FILE_PATHS_TRAIN]
 FILE_PATHS_VALID = [FOLDER+file+SUFFIX for file in FILE_PATHS_VALID]
-
-# Variables to hold dataset
-# y = np.zeros((0,))
-# x = np.zeros((0,3,IMAGE_SIZE,IMAGE_SIZE))
 
 # Datasets
 params = {'batch_size': TRAIN_BATCH_SIZE,
@@ -110,17 +106,10 @@ train_it = train_generator.__iter__()
 data,labels = next(train_it)
 imshow(torchvision.utils.make_grid(data))
 
-# Valid data
-valid_dataset=None
-valid_generator=None
-if len(FILE_PATHS_VALID) > 0:
-    valid_dataset = Dataset(FILE_PATHS_VALID, IMAGE_SIZE)
-    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params)
-
 
 # Pre-trained model for Transfer Learning
 
-# vgg16 = models.vgg16()
+vgg16 = models.vgg16()
 resnet = models.resnet152()
 num_ftrs = resnet.fc.in_features # Number of features before FC
 modules = list(resnet.children())[:-1]
@@ -140,26 +129,25 @@ class FcModel(nn.Module):
     def __init__(self):
         super(FcModel, self).__init__()
 
+        self.dropout1 = nn.Dropout(0.02)
+        self.dropout2 = nn.Dropout(0.20)
+        self.dropout3 = nn.Dropout(0.20)
+
         # 1 Layer
         if HIDDEN_LAYERS == 1:
-            self.dropout1 = nn.Dropout(0.25)
             self.fc1 = nn.Linear(num_ftrs, NUM_CLASSES) 
 
         # 2 Layers
         if HIDDEN_LAYERS == 2:
             self.fc1 = nn.Linear(num_ftrs, FC_NEURONS) 
             self.fc2 = nn.Linear(FC_NEURONS, NUM_CLASSES)
-            self.dropout1 = nn.Dropout(0.25)
-            self.dropout2 = nn.Dropout(0.5)
 
         # Extra layers ... 
         if HIDDEN_LAYERS == 3:
             self.fc1 = nn.Linear(num_ftrs, FC_NEURONS) 
             self.fc2 = nn.Linear(FC_NEURONS, FC_NEURONS) 
             self.fc3 = nn.Linear(FC_NEURONS, NUM_CLASSES)
-            self.dropout1 = nn.Dropout(0.25)
-            self.dropout2 = nn.Dropout(0.5)
-            self.dropout3 = nn.Dropout(0.5)
+            
 
     def forward(self, x):
         x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
@@ -204,8 +192,9 @@ model.apply(init_weights)
 # Loss and optmizer
 
 criterion = nn.CrossEntropyLoss()
+# optimizer = optim.Adam(model.parameters(), lr=0.01)
 # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.5)
 
 # Training with mini batch size = 32, takes about 1 min every 64K samples (=2K mini batches)
 # With ~1.2M samples, 1 epoch takes ~20 min. 
@@ -213,6 +202,9 @@ for epoch in range(EPOCHS):
     running_loss = 0.0
     prediction_list = []
     labels_list = []
+
+    print(f'\nEpoch: {epoch}')
+
     for i, (data, labels) in enumerate(train_generator):
 
         # Activate dropouts
