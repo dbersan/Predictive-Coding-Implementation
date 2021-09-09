@@ -185,6 +185,13 @@ model = FcModel()
 model.to(device) # Move model to device
 summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
 
+# Initialize weights
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        torch.nn.init.xavier_uniform(m.weight)
+        m.bias.data.fill_(0.01)
+
+model.apply(init_weights)
 
 # Loss and optmizer
 
