@@ -18,7 +18,7 @@ class Dataset(torch.utils.data.Dataset):
             x_batch = dataset['data']
             y_batch = dataset['labels']
             y_batch = y_batch-1 # indices 0 ... 999
-
+            
             x_batch = self.get_images(x_batch, self.image_size)
 
             self.y = np.concatenate([self.y, y_batch], axis=0)
@@ -30,9 +30,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         'Generates one sample of data'
-
         return self.transform(self.x[index]), self.y[index]
-
 
     def get_images(self, data, img_size):
         # Returns the dataset with image format, instead of flat array
