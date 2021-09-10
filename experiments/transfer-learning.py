@@ -55,8 +55,8 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
     FILE_PATHS_TRAIN = ['dataset_training_reduced_1']
     FILE_PATHS_VALID = ['dataset_valid_reduced']
     NUM_CLASSES = 20
-    FC_NEURONS = 256*3
-    PRINT_EVERY_N_BATCHES = 120
+    FC_NEURONS = 256
+    PRINT_EVERY_N_BATCHES = 100
 
 
 
@@ -73,17 +73,17 @@ params = {'batch_size': TRAIN_BATCH_SIZE,
 # transform must contain transforms.ToTensor(), or be omitted 
 mean = 0.5
 std = 0.5
-transform = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=.2, hue=.2),
-        transforms.ToTensor(),
-        transforms.Normalize([mean, mean, mean], [std, std, std])])
-
-# Simpler transform
 # transform = transforms.Compose([
+#         transforms.ToPILImage(),
+#         transforms.RandomHorizontalFlip(),
+#         transforms.ColorJitter(brightness=.2, hue=.2),
 #         transforms.ToTensor(),
 #         transforms.Normalize([mean, mean, mean], [std, std, std])])
+
+# Simpler transform
+transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize([mean, mean, mean], [std, std, std])])
 
 # Data generators
 train_dataset = Dataset(FILE_PATHS_TRAIN, IMAGE_SIZE, transform=transform)
@@ -108,15 +108,23 @@ imshow(torchvision.utils.make_grid(data))
 
 
 # Pre-trained model for Transfer Learning
-
-vgg16 = models.vgg16()
 resnet = models.resnet152()
 num_ftrs = resnet.fc.in_features # Number of features before FC
 modules = list(resnet.children())[:-1]
 resnet = nn.Sequential(*modules)
 for p in resnet.parameters():
     p.requires_grad = False
-summary(resnet, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
+
+vgg16 = models.vgg16()
+vgg16 = vgg16.features
+
+for p in vgg16.parameters():
+    p.requires_grad = False
+
+feature_extractor = vgg16
+
+
+summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
 # Fully connected layer model
@@ -129,9 +137,9 @@ class FcModel(nn.Module):
     def __init__(self):
         super(FcModel, self).__init__()
 
-        self.dropout1 = nn.Dropout(0.02)
-        self.dropout2 = nn.Dropout(0.20)
-        self.dropout3 = nn.Dropout(0.20)
+        self.dropout1 = nn.Dropout(0.20)
+        self.dropout2 = nn.Dropout(0.50)
+        self.dropout3 = nn.Dropout(0.50)
 
         # 1 Layer
         if HIDDEN_LAYERS == 1:
@@ -194,7 +202,7 @@ model.apply(init_weights)
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.01)
 # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.5)
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Training with mini batch size = 32, takes about 1 min every 64K samples (=2K mini batches)
 # With ~1.2M samples, 1 epoch takes ~20 min. 
@@ -223,7 +231,7 @@ for epoch in range(EPOCHS):
         model.zero_grad() 
 
         # Compute features
-        features = resnet(data)
+        features = feature_extractor(data)
 
         # Comput model output
         prediction = model(features)
@@ -235,36 +243,60 @@ for epoch in range(EPOCHS):
         # Apply gradients
         optimizer.step()
 
-        # Print current loss
+        # Get running loss
         running_loss += loss.item()
 
-        # Store accuracy
+        # Store predictions
         max_index = prediction.max(dim = 1)[1]
         prediction_list.extend(list(max_index.to('cpu').numpy()))
         labels_list.extend(labels.to('cpu').numpy())
 
         # Calculate evaluation metrics
-        running_loss += loss.item()
         if i % PRINT_EVERY_N_BATCHES == PRINT_EVERY_N_BATCHES-1:    # print every N mini-batches
 
             # Training metrics 
             acc_metric = np.equal(prediction_list, labels_list).sum()*1.0/len(prediction_list)
 
-            # Print Loss and Accuracy
-            print('[%d, %5d] loss: %.3f, accuracy: %.3f' % (epoch + 1, i + 1, running_loss / 2000, acc_metric))
+            
+            # Validation metrics
+            prediction_list_valid = []
+            labels_list_valid = []
+
+            for data, labels in valid_generator:
+                #   Disable dropouts: model.eval()
+                model.eval()
+
+                # Get samples
+                data = data.to(device)
+                labels = labels.to(device)
+
+                # Compute features
+                features = feature_extractor(data)
+
+                # Comput model output
+                prediction = model(features)
+
+                # Calculate loss
+                loss = criterion(prediction, labels)
+
+                # Store predictions
+                max_index = prediction.max(dim = 1)[1]
+                prediction_list_valid.extend(list(max_index.to('cpu').numpy()))
+                labels_list_valid.extend(labels.to('cpu').numpy())
                 
+
+            # Validation metrics 
+            valid_accuracy = np.equal(prediction_list_valid, labels_list_valid).sum()*1.0/len(prediction_list_valid)
+
+            # Print Loss and Accuracy 
+            print('[%d, %5d] loss: %.3f, acc: %.3f, val acc: %.3f' % 
+                (epoch + 1, i + 1, running_loss / 2000, acc_metric, valid_accuracy))
+            
             running_loss = 0.0
             prediction_list = []
             labels_list = []
 
-            # Validation metrics
-            running_loss_valid = 0.0
-            prediction_list_valid = []
-            labels_list_valid = []
 
-            # for i, (data, labels) in enumerate(valid_generator):
-            #   Disable dropouts: model.eval()
-            #   ...
 
     # TODO Test accuracy
 
