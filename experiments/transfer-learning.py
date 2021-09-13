@@ -73,27 +73,27 @@ params = {'batch_size': TRAIN_BATCH_SIZE,
 # transform must contain transforms.ToTensor(), or be omitted 
 mean = 0.5
 std = 0.5
-# transform = transforms.Compose([
-#         transforms.ToPILImage(),
-#         transforms.RandomHorizontalFlip(),
-#         transforms.ColorJitter(brightness=.2, hue=.2),
-#         transforms.ToTensor(),
-#         transforms.Normalize([mean, mean, mean], [std, std, std])])
+train_transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.RandomHorizontalFlip(),
+        transforms.ColorJitter(brightness=.2, hue=.05),
+        transforms.ToTensor(),
+        transforms.Normalize([mean, mean, mean], [std, std, std])])
 
 # Simpler transform
-transform = transforms.Compose([
+valid_transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize([mean, mean, mean], [std, std, std])])
 
 # Data generators
-train_dataset = Dataset(FILE_PATHS_TRAIN, IMAGE_SIZE, transform=transform)
+train_dataset = Dataset(FILE_PATHS_TRAIN, IMAGE_SIZE, transform=train_transform)
 train_generator = torch.utils.data.DataLoader(train_dataset, **params)
 
 valid_dataset=None
 valid_generator=None
 if len(FILE_PATHS_VALID) > 0:
     valid_dataset = Dataset(FILE_PATHS_VALID, IMAGE_SIZE)
-    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params)
+    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params, transform=valid_transform)
 
 # Show data example
 def imshow(img):
