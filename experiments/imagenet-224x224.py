@@ -1,5 +1,5 @@
-# Trains backprop on imagenet (64x64) dataset 
-# Extracted .npz files should go inside dataset/imagenet-64x64/ folder
+# Transfer Learning on imagenet (full image sizes) dataset 
+# Set flag FOLDER to where the dataset is. It should contain a `train` and `val` folders inside
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,6 +12,7 @@ import torchvision.models as models
 from torchinfo import summary
 
 import sys
+import os
 sys.path.append('.')
 from snn.Dataset import Dataset
 
@@ -19,12 +20,11 @@ from snn.Dataset import Dataset
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Dataset Parameters
-IMAGE_SIZE = 64
-NUM_CLASSES = 1000
-TRAIN_BATCH_SIZE = 32
+IMAGE_SIZE = 224
+BATCH_SIZE = 32
 EPOCHS = 25
+VALID_PERC = 0.2 
 USE_REDUCED_DATASET = True
-# VALID_PERC = 0.2 # Not used now, validation data is just one of the batches
 
 # Network Parameters
 FC_NEURONS = 2048
@@ -32,68 +32,62 @@ HIDDEN_LAYERS = 3
 PRINT_EVERY_N_BATCHES = 2000
 
 # Dataset files
-FOLDER = 'datasets/imagenet-64x64/'
-SUFFIX = '.npz'
-FILE_PATHS_TRAIN = [
-    'train_data_batch_1',
-    'train_data_batch_2',
-    'train_data_batch_3',
-    'train_data_batch_4',
-    'train_data_batch_5',
-    'train_data_batch_6',
-    'train_data_batch_7',
-    'train_data_batch_8',
-    'train_data_batch_9',
-]
-
-FILE_PATHS_VALID = [
-    'train_data_batch_10'
-]
+FOLDER = '/data/datasets/imagenet/ILSVRC2012/train'
+SUFFIX = '.JPEG'
 
 if USE_REDUCED_DATASET:     # Use reduced dataset?
-    FOLDER = 'datasets/imagenet-64x64-reduced/'
-    FILE_PATHS_TRAIN = ['dataset_training_reduced_1']
-    FILE_PATHS_VALID = ['dataset_valid_reduced']
-    NUM_CLASSES = 20
+    FOLDER = 'datasets/imagenet-reduced/train/'
     FC_NEURONS = 256
     PRINT_EVERY_N_BATCHES = 100
 
+# Count number of classes
+subfolders = [ f.path for f in os.scandir(FOLDER) if f.is_dir() ]
+NUM_CLASSES = len(subfolders)
 
+def load_split_train_test(datadir, valid_size = .2):
+    # Data transformer
+    # transform must contain transforms.ToTensor(), or be omitted 
+    mean = 0.5
+    std = 0.5
 
-# Compose full data path
-FILE_PATHS_TRAIN = [FOLDER+file+SUFFIX for file in FILE_PATHS_TRAIN]
-FILE_PATHS_VALID = [FOLDER+file+SUFFIX for file in FILE_PATHS_VALID]
+    # TODO resize image to common NN input size (random crop, etc)
+    train_transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.65, 1.0), ratio=(0.9, 1.1)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(brightness=.2, hue=.02),
+            transforms.ToTensor(),
+            transforms.Normalize([mean, mean, mean], [std, std, std])])
 
-# Datasets
-params = {'batch_size': TRAIN_BATCH_SIZE,
-          'shuffle': True,
-          'num_workers': 0}
+    # Simpler transform
+    valid_transform = transforms.Compose([
+            transforms.CenterCrop(IMAGE_SIZE),
+            transforms.ToTensor(),
+            transforms.Normalize([mean, mean, mean], [std, std, std])])
+                                      
+    train_data = torchvision.datasets.ImageFolder(datadir,       
+                    transform=train_transform)
+    valid_data = torchvision.datasets.ImageFolder(datadir,
+                    transform=valid_transform)
 
-# Data transformer
-# transform must contain transforms.ToTensor(), or be omitted 
-mean = 0.5
-std = 0.5
-train_transform = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=.2, hue=.05),
-        transforms.ToTensor(),
-        transforms.Normalize([mean, mean, mean], [std, std, std])])
+    num_train = len(train_data)
+    indices = list(range(num_train))
+    split = int(np.floor(valid_size * num_train))
+    np.random.shuffle(indices)
+    from torch.utils.data.sampler import SubsetRandomSampler
+    train_idx, valid_idx = indices[split:], indices[:split]
 
-# Simpler transform
-valid_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize([mean, mean, mean], [std, std, std])])
+    train_sampler = SubsetRandomSampler(train_idx)
+    valid_sampler = SubsetRandomSampler(valid_idx)
+    train_generator = torch.utils.data.DataLoader(train_data,
+                   batch_size=BATCH_SIZE, shuffle=True)
+    valid_generator = torch.utils.data.DataLoader(valid_data,
+                   batch_size=BATCH_SIZE, shuffle=True)
+    return train_generator, valid_generator
+
 
 # Data generators
-train_dataset = Dataset(FILE_PATHS_TRAIN, IMAGE_SIZE, transform=train_transform)
-train_generator = torch.utils.data.DataLoader(train_dataset, **params)
-
-valid_dataset=None
-valid_generator=None
-if len(FILE_PATHS_VALID) > 0:
-    valid_dataset = Dataset(FILE_PATHS_VALID, IMAGE_SIZE)
-    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params, transform=valid_transform)
+train_generator, valid_generator = load_split_train_test(FOLDER, VALID_PERC)
 
 # Show data example
 def imshow(img):
@@ -124,7 +118,7 @@ for p in vgg16.parameters():
 feature_extractor = vgg16
 
 
-summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
+summary(feature_extractor, input_size=(BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
 # Fully connected layer model
@@ -187,7 +181,7 @@ class FcModel(nn.Module):
 
 model = FcModel()
 model.to(device) # Move model to device
-summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
+summary(model,input_size=(BATCH_SIZE,num_ftrs))
 
 # Initialize weights
 def init_weights(m):

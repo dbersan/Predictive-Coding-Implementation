@@ -56,21 +56,31 @@
         },
 
         {
-            "name": "64x64 Backprop",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/experiments/transfer-learning.py",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
-        },
-
-        {
             "name": "Process 64x64 Imagenet",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/datasets/imagenet-64x64-reduced/reduce-dataset.py",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
+        },
+
+        {
+            "name": "64x64 Imagenet",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/experiments/imagenet-64x64.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "224x224 Imagenet",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/experiments/imagenet-224x224.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
         }
+
     ]
 }
