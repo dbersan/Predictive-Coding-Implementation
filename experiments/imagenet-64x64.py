@@ -76,7 +76,7 @@ std = 0.5
 train_transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=.2, hue=.05),
+        transforms.ColorJitter(brightness=.3, hue=.05),
         transforms.ToTensor(),
         transforms.Normalize([mean, mean, mean], [std, std, std])])
 
@@ -109,7 +109,7 @@ imshow(torchvision.utils.make_grid(data))
 
 # Pre-trained model for Transfer Learning
 resnet = models.resnet152()
-num_ftrs = resnet.fc.in_features # Number of features before FC
+num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
 modules = list(resnet.children())[:-1]
 resnet = nn.Sequential(*modules)
 for p in resnet.parameters():
@@ -117,11 +117,12 @@ for p in resnet.parameters():
 
 vgg16 = models.vgg16()
 vgg16 = vgg16.features
-
 for p in vgg16.parameters():
     p.requires_grad = False
+num_ftrs_vgg16 = 512*7*7
 
 feature_extractor = vgg16
+num_ftrs = num_ftrs_vgg16
 
 
 summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))

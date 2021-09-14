@@ -52,10 +52,9 @@ def load_split_train_test(datadir, valid_size = .2):
 
     # TODO resize image to common NN input size (random crop, etc)
     train_transform = transforms.Compose([
-            transforms.ToPILImage(),
             transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.65, 1.0), ratio=(0.9, 1.1)),
             transforms.RandomHorizontalFlip(),
-            transforms.ColorJitter(brightness=.2, hue=.02),
+            transforms.ColorJitter(brightness=.3, hue=.05),
             transforms.ToTensor(),
             transforms.Normalize([mean, mean, mean], [std, std, std])])
 
@@ -80,9 +79,9 @@ def load_split_train_test(datadir, valid_size = .2):
     train_sampler = SubsetRandomSampler(train_idx)
     valid_sampler = SubsetRandomSampler(valid_idx)
     train_generator = torch.utils.data.DataLoader(train_data,
-                   batch_size=BATCH_SIZE, shuffle=True)
+                   batch_size=BATCH_SIZE, sampler=train_sampler)
     valid_generator = torch.utils.data.DataLoader(valid_data,
-                   batch_size=BATCH_SIZE, shuffle=True)
+                   batch_size=BATCH_SIZE, sampler=valid_sampler)
     return train_generator, valid_generator
 
 
@@ -103,7 +102,7 @@ imshow(torchvision.utils.make_grid(data))
 
 # Pre-trained model for Transfer Learning
 resnet = models.resnet152()
-num_ftrs = resnet.fc.in_features # Number of features before FC
+num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
 modules = list(resnet.children())[:-1]
 resnet = nn.Sequential(*modules)
 for p in resnet.parameters():
@@ -111,11 +110,12 @@ for p in resnet.parameters():
 
 vgg16 = models.vgg16()
 vgg16 = vgg16.features
-
 for p in vgg16.parameters():
     p.requires_grad = False
+num_ftrs_vgg16 = 512*7*7
 
 feature_extractor = vgg16
+num_ftrs = num_ftrs_vgg16
 
 
 summary(feature_extractor, input_size=(BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
