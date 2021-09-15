@@ -92,8 +92,8 @@ train_generator = torch.utils.data.DataLoader(train_dataset, **params)
 valid_dataset=None
 valid_generator=None
 if len(FILE_PATHS_VALID) > 0:
-    valid_dataset = Dataset(FILE_PATHS_VALID, IMAGE_SIZE)
-    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params, transform=valid_transform)
+    valid_dataset = Dataset(FILE_PATHS_VALID, IMAGE_SIZE, transform=valid_transform)
+    valid_generator = torch.utils.data.DataLoader(valid_dataset, **params)
 
 # Show data example
 def imshow(img):
@@ -119,7 +119,7 @@ vgg16 = models.vgg16()
 vgg16 = vgg16.features
 for p in vgg16.parameters():
     p.requires_grad = False
-num_ftrs_vgg16 = 512*7*7
+num_ftrs_vgg16 = 512*2*2
 
 feature_extractor = vgg16
 num_ftrs = num_ftrs_vgg16
