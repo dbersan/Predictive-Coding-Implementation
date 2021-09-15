@@ -76,7 +76,7 @@ std = 0.5
 train_transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=.3, hue=.05),
+        transforms.ColorJitter(brightness=.3, hue=.05, contrast=0.2),
         transforms.ToTensor(),
         transforms.Normalize([mean, mean, mean], [std, std, std])])
 

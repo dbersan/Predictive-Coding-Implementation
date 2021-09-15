@@ -54,7 +54,7 @@ def load_split_train_test(datadir, valid_size = .2):
     train_transform = transforms.Compose([
             transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.65, 1.0), ratio=(0.9, 1.1)),
             transforms.RandomHorizontalFlip(),
-            transforms.ColorJitter(brightness=.3, hue=.05),
+            transforms.ColorJitter(brightness=.3, hue=.05, contrast=0.2),
             transforms.ToTensor(),
             transforms.Normalize([mean, mean, mean], [std, std, std])])
 
@@ -211,10 +211,7 @@ for epoch in range(EPOCHS):
 
         # Activate dropouts
         model.train()
-        
-        # Normalize
-        # data = data.float()
-        # data = (data-125.0)/125.0
+        feature_extractor.train()
 
         # Get samples
         data = data.to(device)
@@ -259,6 +256,7 @@ for epoch in range(EPOCHS):
             for data, labels in valid_generator:
                 #   Disable dropouts: model.eval()
                 model.eval()
+                feature_extractor.eval()
 
                 # Get samples
                 data = data.to(device)
