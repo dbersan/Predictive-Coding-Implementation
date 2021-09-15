@@ -201,9 +201,17 @@ model.apply(init_weights)
 # Loss and optmizer
 
 criterion = nn.CrossEntropyLoss()
-# optimizer = optim.Adam(model.parameters(), lr=0.01)
+# optimizer = optim.Adam(model.parameters(), lr=0.005)
 # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+# Store metrics
+metrics = {
+    'backprop_train_acc': [],
+    'backprop_val_acc': [],
+    'pc_train_acc': [],
+    'pc_val_acc': []
+}
 
 # Training with mini batch size = 32, takes about 1 min every 64K samples (=2K mini batches)
 # With ~1.2M samples, 1 epoch takes ~20 min. 
@@ -214,15 +222,12 @@ for epoch in range(EPOCHS):
 
     print(f'\nEpoch: {epoch}')
 
+    # Activate dropouts, batch norm...
+    model.train()
+    feature_extractor.train()
+
     for i, (data, labels) in enumerate(train_generator):
-
-        # Activate dropouts
-        model.train()
         
-        # Normalize
-        # data = data.float()
-        # data = (data-125.0)/125.0
-
         # Get samples
         data = data.to(device)
         labels = labels.to(device)
@@ -252,54 +257,80 @@ for epoch in range(EPOCHS):
         prediction_list.extend(list(max_index.to('cpu').numpy()))
         labels_list.extend(labels.to('cpu').numpy())
 
-        # Calculate evaluation metrics
+        # Calculate partial training accuracy
         if i % PRINT_EVERY_N_BATCHES == PRINT_EVERY_N_BATCHES-1:    # print every N mini-batches
 
             # Training metrics 
             acc_metric = np.equal(prediction_list, labels_list).sum()*1.0/len(prediction_list)
 
-            
-            # Validation metrics
-            prediction_list_valid = []
-            labels_list_valid = []
+            print('batch num: %5d, (backprop) acc: %.3f | (pc) acc: ...' % 
+                (i + 1, acc_metric))
 
-            for data, labels in valid_generator:
-                #   Disable dropouts: model.eval()
-                model.eval()
+    # Finished epoch
 
-                # Get samples
-                data = data.to(device)
-                labels = labels.to(device)
+    # Calculate validation accuracy and train accuracy for epoch
 
-                # Compute features
-                features = feature_extractor(data)
+    acc_metric = np.equal(prediction_list, labels_list).sum()*1.0/len(prediction_list)
 
-                # Comput model output
-                prediction = model(features)
+    prediction_list_valid = []
+    labels_list_valid = []
 
-                # Calculate loss
-                loss = criterion(prediction, labels)
+    #   Disable dropouts: model.eval()
+    model.eval()
+    feature_extractor.eval()
 
-                # Store predictions
-                max_index = prediction.max(dim = 1)[1]
-                prediction_list_valid.extend(list(max_index.to('cpu').numpy()))
-                labels_list_valid.extend(labels.to('cpu').numpy())
-                
+    for data, labels in valid_generator:
+        # Get samples
+        data = data.to(device)
+        labels = labels.to(device)
 
-            # Validation metrics 
-            valid_accuracy = np.equal(prediction_list_valid, labels_list_valid).sum()*1.0/len(prediction_list_valid)
+        # Compute features
+        features = feature_extractor(data)
 
-            # Print Loss and Accuracy 
-            print('[%d, %5d] loss: %.3f, acc: %.3f, val acc: %.3f' % 
-                (epoch + 1, i + 1, running_loss / 2000, acc_metric, valid_accuracy))
-            
-            running_loss = 0.0
-            prediction_list = []
-            labels_list = []
+        # Comput model output
+        prediction = model(features)
 
+        # Calculate loss
+        loss = criterion(prediction, labels)
 
+        # Store predictions
+        max_index = prediction.max(dim = 1)[1]
+        prediction_list_valid.extend(list(max_index.to('cpu').numpy()))
+        labels_list_valid.extend(labels.to('cpu').numpy())
+        
 
-    # TODO Test accuracy
+    # Validation metrics 
+    valid_accuracy = np.equal(prediction_list_valid, labels_list_valid).sum()*1.0/len(prediction_list_valid)
+
+    # Print Loss and Accuracy 
+    print('Epoch: %d, (backprop) loss: %.3f, acc: %.3f, val acc: %.3f | (pc) ...' % 
+        (epoch + 1, running_loss / 2000, acc_metric, valid_accuracy))
+    
+    running_loss = 0.0
+    prediction_list = []
+    labels_list = []
+
+    # Store metrics for epoch
+    metrics['backprop_train_acc'].append(acc_metric)
+    metrics['backprop_val_acc'].append(valid_accuracy)
+
+# Print final metrics
+print("------------------------------------------------")
+print("End of training session\n")
+
+print("backprop_train_acc=", end="", flush=True)
+print(metrics['backprop_train_acc'])
+
+print("backprop_val_acc=", end="", flush=True)
+print(metrics['backprop_val_acc'])
+
+print("pc_train_acc=", end="", flush=True)
+print(metrics['pc_train_acc'])
+
+print("pc_val_acc=", end="", flush=True)
+print(metrics['pc_val_acc'])
+
+# TODO Test accuracy
 
 
 
