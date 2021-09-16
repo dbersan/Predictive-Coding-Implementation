@@ -56,7 +56,7 @@
         },
 
         {
-            "name": "Process 64x64 Imagenet",
+            "name": "Reduce 64x64 Imagenet",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/datasets/imagenet-64x64-reduced/reduce-dataset.py",

@@ -34,18 +34,22 @@ t_start     = datetime.datetime.now()
 t_last_batch = datetime.datetime.now()
 
 for dataset_index,path in enumerate(file_paths_train):
-    dataset = np.load(path)
-    x_batch = dataset['data']
-    y_batch = dataset['labels']
 
-    for i in range(x_batch.shape[0]):
-        if y_batch[i] in DESIRED_CLASSES:
-            llist_label_data.append((y_batch[i], x_batch[i]))
+    with np.load(path) as dataset:
+        x_batch = dataset['data']
+        y_batch = dataset['labels']
 
-    t_now = datetime.datetime.now()
-    batch_processing_time = (t_now - t_last_batch )
-    print("Batch [%d], processing time: %.2f (seconds)" % (dataset_index, batch_processing_time.total_seconds()))
-    t_last_batch = t_now
+        for i in range(x_batch.shape[0]):
+            if y_batch[i] in DESIRED_CLASSES:
+                llist_label_data.append((y_batch[i], np.copy(x_batch[i])))
+
+        del x_batch
+        del y_batch
+        
+        t_now = datetime.datetime.now()
+        batch_processing_time = (t_now - t_last_batch )
+        print("Batch [%d], processing time: %.2f (seconds)" % (dataset_index, batch_processing_time.total_seconds()))
+        t_last_batch = t_now
 
 items = len(llist_label_data)
 labels = np.zeros((items,), dtype=np.int)
