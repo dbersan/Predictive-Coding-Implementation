@@ -26,7 +26,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Dataset Parameters
 IMAGE_SIZE = 224
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 4
 VALID_PERC = 0.2 
 USE_REDUCED_DATASET = True
 
@@ -104,23 +104,32 @@ data,labels = next(train_it)
 imshow(torchvision.utils.make_grid(data))
 
 
-# Pre-trained model for Transfer Learning
-resnet = models.resnet152()
+# Resnet
+resnet = models.resnet152(pretrained=True)
 num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
 modules = list(resnet.children())[:-1]
 resnet = nn.Sequential(*modules)
 for p in resnet.parameters():
     p.requires_grad = False
 
-vgg16 = models.vgg16()
+# Vgg16
+vgg16 = models.vgg16(pretrained=True)
 vgg16 = vgg16.features
 for p in vgg16.parameters():
     p.requires_grad = False
 num_ftrs_vgg16 = 512*7*7
 
+# Modified Resnet
+# resnet2 = models.resnet152(pretrained=True)
+# num_ftrs_resnet2 = resnet2.fc.in_features
+# for param in resnet2.parameters():
+#     param.requires_grad = False
+# resnet2.fc = nn.Flatten()
+
 feature_extractor = resnet
 num_ftrs = num_ftrs_resnet
 
+feature_extractor = feature_extractor.to(device)
 summary(feature_extractor, input_size=(BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 

@@ -113,14 +113,14 @@ imshow(torchvision.utils.make_grid(data))
 
 
 # Pre-trained model for Transfer Learning
-resnet = models.resnet152()
+resnet = models.resnet152(pretrained=True)
 num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
 modules = list(resnet.children())[:-1]
 resnet = nn.Sequential(*modules)
 for p in resnet.parameters():
     p.requires_grad = False
 
-vgg16 = models.vgg16()
+vgg16 = models.vgg16(pretrained=True)
 vgg16 = vgg16.features
 for p in vgg16.parameters():
     p.requires_grad = False
