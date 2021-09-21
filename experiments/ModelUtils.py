@@ -58,7 +58,17 @@ def getFcModel(input_size, output_size, num_layers, neurons_per_layer):
 
             return x
 
-    return FcModel()
+    model = FcModel()
+
+    # Initialize model weights
+    def init_weights(m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform(m.weight)
+            m.bias.data.fill_(0.01)
+
+    model.apply(init_weights)
+
+    return model
 
 def train_TransferLearning_Simultaneous_Backprop_PC(
     epochs, 
@@ -180,7 +190,6 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         metrics['backprop_val_acc'].append(valid_accuracy)
 
     return metrics
-
 
 def printMetrics(metrics):
     print("------------------------------------------------")

@@ -48,10 +48,11 @@ FILE_PATHS_TRAIN = [
     'train_data_batch_7',
     'train_data_batch_8',
     'train_data_batch_9',
+    'train_data_batch_10'
 ]
 
 FILE_PATHS_VALID = [
-    'train_data_batch_10'
+    'val_data'
 ]
 
 if USE_REDUCED_DATASET:     # Use reduced dataset?
@@ -128,7 +129,6 @@ num_ftrs_vgg16 = 512*2*2
 feature_extractor = vgg16
 num_ftrs = num_ftrs_vgg16
 
-
 summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
@@ -141,13 +141,6 @@ model = ModelUtils.getFcModel(  num_ftrs,
 model.to(device) # Move model to device
 summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
 
-# Initialize weights
-def init_weights(m):
-    if isinstance(m, nn.Linear):
-        torch.nn.init.xavier_uniform(m.weight)
-        m.bias.data.fill_(0.01)
-
-model.apply(init_weights)
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()

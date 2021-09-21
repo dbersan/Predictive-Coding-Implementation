@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from sklearn.utils import shuffle
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 import torchvision.models as models
@@ -16,13 +17,16 @@ import os
 sys.path.append('.')
 from snn.Dataset import Dataset
 
+# Import util functions 
+import experiments.ModelUtils as ModelUtils
+
 # Set PyTorch device
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Dataset Parameters
 IMAGE_SIZE = 224
 BATCH_SIZE = 32
-EPOCHS = 25
+EPOCHS = 10
 VALID_PERC = 0.2 
 USE_REDUCED_DATASET = True
 
@@ -114,186 +118,43 @@ for p in vgg16.parameters():
     p.requires_grad = False
 num_ftrs_vgg16 = 512*7*7
 
-feature_extractor = vgg16
-num_ftrs = num_ftrs_vgg16
-
+feature_extractor = resnet
+num_ftrs = num_ftrs_resnet
 
 summary(feature_extractor, input_size=(BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
 # Fully connected layer model
+model = ModelUtils.getFcModel(  num_ftrs, 
+                                NUM_CLASSES, 
+                                HIDDEN_LAYERS, 
+                                FC_NEURONS)
 
-import torch.nn.functional as F
-import torch.optim as optim
-
-class FcModel(nn.Module):
-
-    def __init__(self):
-        super(FcModel, self).__init__()
-
-        self.dropout1 = nn.Dropout(0.20)
-        self.dropout2 = nn.Dropout(0.50)
-        self.dropout3 = nn.Dropout(0.50)
-
-        # 1 Layer
-        if HIDDEN_LAYERS == 1:
-            self.fc1 = nn.Linear(num_ftrs, NUM_CLASSES) 
-
-        # 2 Layers
-        if HIDDEN_LAYERS == 2:
-            self.fc1 = nn.Linear(num_ftrs, FC_NEURONS) 
-            self.fc2 = nn.Linear(FC_NEURONS, NUM_CLASSES)
-
-        # Extra layers ... 
-        if HIDDEN_LAYERS == 3:
-            self.fc1 = nn.Linear(num_ftrs, FC_NEURONS) 
-            self.fc2 = nn.Linear(FC_NEURONS, FC_NEURONS) 
-            self.fc3 = nn.Linear(FC_NEURONS, NUM_CLASSES)
-            
-
-    def forward(self, x):
-        x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
-        
-        # 1 Layer
-        if HIDDEN_LAYERS == 1:
-            x = self.dropout1(x)
-            x = self.fc1(x)
-
-        # 2 Layers
-        if HIDDEN_LAYERS == 2:
-            # x = self.dropout1(x)
-            x = self.fc1(x)
-            x = F.relu(x)
-            x = self.dropout2(x)
-            x = self.fc2(x)
-
-        if HIDDEN_LAYERS == 3:
-            x = self.dropout1(x)
-            x = self.fc1(x)
-            x = F.relu(x)
-            x = self.dropout2(x)
-            x = self.fc2(x)
-            x = F.relu(x)
-            x = self.dropout3(x)
-            x = self.fc3(x)
-
-        return x
-
-model = FcModel()
 model.to(device) # Move model to device
 summary(model,input_size=(BATCH_SIZE,num_ftrs))
 
-# Initialize weights
-def init_weights(m):
-    if isinstance(m, nn.Linear):
-        torch.nn.init.xavier_uniform(m.weight)
-        m.bias.data.fill_(0.01)
-
-model.apply(init_weights)
 
 # Loss and optmizer
-
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.01)
 # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-# Training with mini batch size = 32, takes about 1 min every 64K samples (=2K mini batches)
-# With ~1.2M samples, 1 epoch takes ~20 min. 
-for epoch in range(EPOCHS):
-    running_loss = 0.0
-    prediction_list = []
-    labels_list = []
+# Train models
+metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
+            EPOCHS,
+            NUM_CLASSES,
+            train_generator,
+            valid_generator,
+            model,
+            feature_extractor,
+            criterion,
+            optimizer,
+            device,
+            PRINT_EVERY_N_BATCHES)
 
-    print(f'\nEpoch: {epoch}')
-
-    for i, (data, labels) in enumerate(train_generator):
-
-        # Activate dropouts
-        model.train()
-        feature_extractor.train()
-
-        # Get samples
-        data = data.to(device)
-        labels = labels.to(device)
-        labels_one_hot = F.one_hot(labels, num_classes=NUM_CLASSES)
-
-        # Zero model gradiants
-        model.zero_grad() 
-
-        # Compute features
-        features = feature_extractor(data)
-
-        # Comput model output
-        prediction = model(features)
-
-        # Calculate loss and gradiants
-        loss = criterion(prediction, labels)
-        loss.backward()
-
-        # Apply gradients
-        optimizer.step()
-
-        # Get running loss
-        running_loss += loss.item()
-
-        # Store predictions
-        max_index = prediction.max(dim = 1)[1]
-        prediction_list.extend(list(max_index.to('cpu').numpy()))
-        labels_list.extend(labels.to('cpu').numpy())
-
-        # Calculate evaluation metrics
-        if i % PRINT_EVERY_N_BATCHES == PRINT_EVERY_N_BATCHES-1:    # print every N mini-batches
-
-            # Training metrics 
-            acc_metric = np.equal(prediction_list, labels_list).sum()*1.0/len(prediction_list)
-
-            
-            # Validation metrics
-            prediction_list_valid = []
-            labels_list_valid = []
-
-            for data, labels in valid_generator:
-                #   Disable dropouts: model.eval()
-                model.eval()
-                feature_extractor.eval()
-
-                # Get samples
-                data = data.to(device)
-                labels = labels.to(device)
-
-                # Compute features
-                features = feature_extractor(data)
-
-                # Comput model output
-                prediction = model(features)
-
-                # Calculate loss
-                loss = criterion(prediction, labels)
-
-                # Store predictions
-                max_index = prediction.max(dim = 1)[1]
-                prediction_list_valid.extend(list(max_index.to('cpu').numpy()))
-                labels_list_valid.extend(labels.to('cpu').numpy())
-                
-
-            # Validation metrics 
-            valid_accuracy = np.equal(prediction_list_valid, labels_list_valid).sum()*1.0/len(prediction_list_valid)
-
-            # Print Loss and Accuracy 
-            print('[%d, %5d] loss: %.3f, acc: %.3f, val acc: %.3f' % 
-                (epoch + 1, i + 1, running_loss / 2000, acc_metric, valid_accuracy))
-            
-            running_loss = 0.0
-            prediction_list = []
-            labels_list = []
-
-
-
-    # TODO Test accuracy
-
-
-
+# Print Metrics
+ModelUtils.printMetrics(metrics)
 
 
 
