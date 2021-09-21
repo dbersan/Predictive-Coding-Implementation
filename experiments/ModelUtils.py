@@ -5,6 +5,19 @@ import torch.nn as nn
 import numpy as np
 
 def getFcModel(input_size, output_size, num_layers, neurons_per_layer):
+
+    """Creates a Fully Connected model with Pytorch 
+
+        Args:
+            input_size: size of network input
+            output_size: size of network output
+            num_layers: number of layers
+            neurons_per_layer: neurons on each layer
+
+        Returns: 
+            - The fully connected model
+    """
+
     class FcModel(nn.Module):
 
         def __init__(self):
@@ -81,6 +94,24 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
     optimizer, 
     device,
     print_every_n_batches):
+
+    """ Trains the FC layer and a Predictive Coding network simultaneously, given an image dataset generator and a feature extractor
+
+        Args:
+            epochs
+            num_classes
+            train_generator
+            valid_generator 
+            model: The fully connected model from Pytorch
+            feature_extractor: The feature extractor model
+            criterion: Pytorch loss calculator for FC model
+            optimizer: Pytorch optimizer for FC model
+            device: The CPU or GPU device
+            print_every_n_batches: how often to print training accuracy
+
+        Returns: 
+            - A dictionary with the evaluation metrics of the training session
+    """
     
     # Return metrics after training
     metrics = {
@@ -192,6 +223,14 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
     return metrics
 
 def printMetrics(metrics):
+
+    """ Prints neural network training metrics
+
+        Args:
+            metrics: Output of `train_TransferLearning_Simultaneous_Backprop_PC()`
+
+    """
+
     print("------------------------------------------------")
     print("End of training session\n")
 
@@ -206,3 +245,4 @@ def printMetrics(metrics):
 
     print("pc_val_acc=", end="", flush=True)
     print(metrics['pc_val_acc'])
+
