@@ -126,9 +126,10 @@ for p in vgg16.parameters():
     p.requires_grad = False
 num_ftrs_vgg16 = 512*2*2
 
-feature_extractor = vgg16
-num_ftrs = num_ftrs_vgg16
+feature_extractor = resnet
+num_ftrs = num_ftrs_resnet
 
+feature_extractor = feature_extractor.to(device)
 summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
