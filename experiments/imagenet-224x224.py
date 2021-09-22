@@ -105,12 +105,18 @@ imshow(torchvision.utils.make_grid(data))
 
 
 # Resnet
+# resnet = models.resnet152(pretrained=True)
+# num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
+# modules = list(resnet.children())[:-1]
+# resnet = nn.Sequential(*modules)
+# for p in resnet.parameters():
+#     p.requires_grad = False
+
 resnet = models.resnet152(pretrained=True)
-num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
-modules = list(resnet.children())[:-1]
-resnet = nn.Sequential(*modules)
-for p in resnet.parameters():
-    p.requires_grad = False
+num_ftrs_resnet = resnet.fc.in_features
+for param in resnet.parameters():
+    param.requires_grad = False
+resnet.fc = nn.Flatten()
 
 # Vgg16
 vgg16 = models.vgg16(pretrained=True)
@@ -118,13 +124,6 @@ vgg16 = vgg16.features
 for p in vgg16.parameters():
     p.requires_grad = False
 num_ftrs_vgg16 = 512*7*7
-
-# Modified Resnet
-# resnet2 = models.resnet152(pretrained=True)
-# num_ftrs_resnet2 = resnet2.fc.in_features
-# for param in resnet2.parameters():
-#     param.requires_grad = False
-# resnet2.fc = nn.Flatten()
 
 feature_extractor = resnet
 num_ftrs = num_ftrs_resnet

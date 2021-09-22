@@ -58,7 +58,7 @@ if multiple_files:
     prefix = 'train_data_batch_'
     for i in range(1, count+1):
         name = prefix + str(i) + '.npz'
-        dataset = np.load('../datasets/'+name)
+        dataset = np.load('../datasets/imagenet-32x32/'+name)
         x_batch = dataset['data']
         y_batch = dataset['labels']
 

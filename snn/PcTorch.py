@@ -333,8 +333,8 @@ class PcTorch:
                 Fx = self.F(x[l-1])
                 x[l] = torch.matmul(self.w[l-1],Fx) + self.b[l-1]
 
-            if np.isnan(torch.min(x[l])):
-                print(f"Is nan:")
+            # if np.isnan(torch.min(x[l])):
+            #     print(f"Is nan:")
 
         return x
 
