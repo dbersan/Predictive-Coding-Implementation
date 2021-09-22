@@ -86,7 +86,7 @@ class PcTorch:
         epochs=1,
         max_it=10, 
         activation='relu', 
-        optmizer='none',
+        optimizer='none',
         dataset_perc = 1.0,
         learning_rate=0.001
     ):
@@ -101,8 +101,9 @@ class PcTorch:
             epochs: number of epochs to train
             max_it: maximum number of iterations when performing pc inference 
             activation: activation function
-            optmizer: optmizer of training algorithm
+            optimizer: optimizer of training algorithm
             dataset_perc: what percentage of dataset to use for training
+            learning_rate: the learning rate for PC
         """
 
         assert len(train_data) == len(train_labels)
@@ -130,6 +131,7 @@ class PcTorch:
         PROCESS_BATCH_COUNT = int(np.floor(self.train_samples_count * dataset_perc / self.batch_size ))
 
         if activation not in PcTorch.ActivationFunctions:
+            print(f"Warning: Activation '{activation}' not found, using default.")
             activation = PcTorch.ActivationFunctions[0]
         
         # Learning rate 
@@ -140,7 +142,7 @@ class PcTorch:
         self.dF = PcTorch.ActivationDerivatives[activation]
         self.preprocessing = PcTorch.PreprocessingFunctions[activation]
 
-        self.optimizer = optmizer
+        self.optimizer = optimizer
         if self.optimizer  not in PcTorch.Optimizers:
             self.optimizer  = PcTorch.Optimizers[0]
 
@@ -497,6 +499,79 @@ class PcTorch:
 
         return output
 
+    def single_batch_pass(self, train_data, train_labels, transpose=True):
+        """ Performs a single training pass on the Predictive Coding Network, which consists of: Feedforward, Inference and Weight Update steps. 
+
+        Accept an input in batch format. Applied pre activation function to input. 
+
+        Args:
+            train_data: a torch array with shape [batch_size, input_size] (if transpose=True)
+            train_labels: a torch array with shape [batch_size, num_classes] (if transpose=True), that is, a one-hot encoded batch array
+            transpose: Indicates whether to transpose the input  
+
+        Returns: 
+            - Output of last layer
+        """
+        out_layer = self.n_layers-1
+
+        train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) # Normalize to (0...1) ?
+
+        train_labels = torch.transpose(train_labels.to(dtype=PcTorch.dtype), 0, 1)
+        
+        # Feedforward
+        x = self.feedforward(train_data)
+        predictions = torch.clone(x[out_layer])
+
+        # Perform inference
+        x[out_layer] = train_labels
+        x,e = self.inference(x)
+
+        # Update weightsx
+        self.update_weights(x,e)
+
+        return predictions
+
+    def set_training_parameters(self, max_it=10, activation='relu', optimizer='none', learning_rate=0.001):
+
+        """ Sets the training parameters once. Used in conjunction with `single_batch_pass()`, so that parameters don't need to be set every batch call. `train()` does not require this function call, because it already receives the parameter list. 
+        
+        Args:
+            max_it: maximum number of iterations when performing pc inference 
+            activation: activation function
+            optimizer: optimizer of training algorithm
+            learning_rate: the learning rate for PC
+        """
+
+        # max_it
+        self.max_it = max_it
+        assert self.max_it >= 1
+
+        # activation
+        if activation not in PcTorch.ActivationFunctions:
+            print(f"Warning: Activation '{activation}' not found, using default.")
+            activation = PcTorch.ActivationFunctions[0] 
+
+        self.F = PcTorch.ActivationFunctions[activation]
+        self.dF = PcTorch.ActivationDerivatives[activation]
+        self.preprocessing = PcTorch.PreprocessingFunctions[activation]
+
+        # optimizer
+        if optimizer  not in PcTorch.Optimizers:
+            print(f"Warning: Optimizer '{optimizer}' not found, using default.")
+            optimizer  = PcTorch.Optimizers[0]
+
+        self.optimizer = optimizer
+
+        # learning_rate
+        self.alpha = learning_rate
+
+    def batch_inference(self, train_data, transpose=True):
+        out_layer = self.n_layers-1
+        train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) # Normalize to (0...1) ?
+
+        # Feedforward
+        x = self.feedforward(train_data)
+        return torch.clone(x[out_layer])
 
 
 

@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 
-def getFcModel(input_size, output_size, num_layers, neurons_per_layer):
+def getFcModel(input_size, output_size, num_layers, neurons_hidden_layer):
 
     """Creates a Fully Connected model with Pytorch 
 
@@ -12,7 +12,7 @@ def getFcModel(input_size, output_size, num_layers, neurons_per_layer):
             input_size: size of network input
             output_size: size of network output
             num_layers: number of layers
-            neurons_per_layer: neurons on each layer
+            neurons_hidden_layer: neurons on each layer
 
         Returns: 
             - The fully connected model
@@ -33,14 +33,14 @@ def getFcModel(input_size, output_size, num_layers, neurons_per_layer):
 
             # 2 Layers
             if num_layers == 2:
-                self.fc1 = nn.Linear(input_size, neurons_per_layer) 
-                self.fc2 = nn.Linear(neurons_per_layer, output_size)
+                self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
+                self.fc2 = nn.Linear(neurons_hidden_layer, output_size)
 
             # Extra layers ... 
             if num_layers == 3:
-                self.fc1 = nn.Linear(input_size, neurons_per_layer) 
-                self.fc2 = nn.Linear(neurons_per_layer, neurons_per_layer) 
-                self.fc3 = nn.Linear(neurons_per_layer, output_size)
+                self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
+                self.fc2 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc3 = nn.Linear(neurons_hidden_layer, output_size)
                 
 
         def forward(self, x):
@@ -88,12 +88,13 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
     num_classes, 
     train_generator, 
     valid_generator, 
-    model, 
+    model,
     feature_extractor, 
     criterion, 
     optimizer, 
     device,
-    print_every_n_batches):
+    print_every_n_batches,
+    pc_model = None):
 
     """ Trains the FC layer and a Predictive Coding network simultaneously, given an image dataset generator and a feature extractor
 
@@ -124,6 +125,7 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
     for epoch in range(epochs):
         running_loss = 0.0
         prediction_list = []
+        prediction_list_pc = []
         labels_list = []
 
         print(f'\nEpoch: {epoch}')
@@ -137,7 +139,6 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             # Get samples
             data = data.to(device)
             labels = labels.to(device)
-            labels_one_hot = F.one_hot(labels, num_classes=num_classes)
 
             # Zero model gradiants
             model.zero_grad() 
@@ -163,14 +164,24 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             prediction_list.extend(list(max_index.to('cpu').numpy()))
             labels_list.extend(labels.to('cpu').numpy())
 
+            # Predictive Coding training
+            if pc_model:
+                labels_one_hot = F.one_hot(labels, num_classes=num_classes)
+                prediction_pc = pc_model.single_batch_pass(features, labels_one_hot)
+                prediction_list_pc.extend(list(torch.argmax(prediction_pc, dim=0)))
+                
             # Calculate partial training accuracy
             if i % print_every_n_batches == print_every_n_batches-1:    # print every N mini-batches
 
                 # Training metrics 
                 acc_metric = np.equal(prediction_list, labels_list).sum()*1.0/len(prediction_list)
+                acc_metric_pc = np.nan
 
-                print('batch num: %5d, (backprop) acc: %.3f | (pc) acc: ...' % 
-                    (i + 1, acc_metric))
+                if pc_model:
+                    acc_metric_pc = np.equal(prediction_list_pc, labels_list).sum()*1.0/len(prediction_list_pc)
+
+                print('batch num: %5d, (backprop) acc: %.3f | (pc) acc: %.3f' % 
+                    (i + 1, acc_metric, acc_metric_pc))
 
         # Finished epoch
 
@@ -245,4 +256,13 @@ def printMetrics(metrics):
 
     print("pc_val_acc=", end="", flush=True)
     print(metrics['pc_val_acc'])
+
+def getPcModelArchitecture(input_size, output_size, num_layers, neurons_hidden_layer):
+    neurons = [input_size]
+    for i in range(num_layers-1):
+        neurons.append(neurons_hidden_layer)
+
+    neurons.append(output_size)
+    
+
 

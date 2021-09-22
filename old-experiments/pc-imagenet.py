@@ -137,7 +137,7 @@ model_torch.train(
     batch_size=BATCH_SIZE, 
     epochs=EPOCHS, 
     max_it=INFERENCE_STEPS,
-    optmizer=OPTIMIZER,
+    optimizer=OPTIMIZER,
     activation=ACTIVATION,
     dataset_perc = DATA_PERC
 )

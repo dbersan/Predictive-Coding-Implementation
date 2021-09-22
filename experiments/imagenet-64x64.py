@@ -15,6 +15,7 @@ from torchinfo import summary
 import sys
 sys.path.append('.')
 from snn.Dataset import Dataset
+from snn.PcTorch import PcTorch
 
 # Import util functions 
 import experiments.ModelUtils as ModelUtils
@@ -32,8 +33,15 @@ USE_REDUCED_DATASET = True
 
 # Network Parameters
 FC_NEURONS = 2048
-HIDDEN_LAYERS = 3
+HIDDEN_LAYERS = 2
 PRINT_EVERY_N_BATCHES = 2000
+
+# Predictive Coding parameters
+INFERENCE_STEPS = 40
+OPTIMIZER = 'adam'  
+ACTIVATION='sigmoid'
+ACTIVATION='relu'
+LR = 0.002
 
 # Dataset files
 FOLDER = 'datasets/imagenet-64x64/'
@@ -62,8 +70,6 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
     NUM_CLASSES = 20
     FC_NEURONS = 256
     PRINT_EVERY_N_BATCHES = 100
-
-
 
 # Compose full data path
 FILE_PATHS_TRAIN = [FOLDER+file+SUFFIX for file in FILE_PATHS_TRAIN]
@@ -147,12 +153,16 @@ model = ModelUtils.getFcModel(  num_ftrs,
 model.to(device) # Move model to device
 summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
 
+# Predictive Coding model
+pc_model_architecture = ModelUtils.getPcModelArchitecture()
+pc_model = PcTorch(pc_model_architecture)
+pc_model.set_training_parameters(INFERENCE_STEPS, ACTIVATION, OPTIMIZER, LR)
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()
-# optimizer = optim.Adam(model.parameters(), lr=0.005)
-# optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.SGD(model.parameters(), lr=0.003, momentum=0.9)
+# optimizer = optim.Adam(model.parameters(), lr=LR)
+# optimizer = optim.SGD(model.parameters(), lr=LR, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=LR, momentum=0.9)
 
 # Train models
 metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
