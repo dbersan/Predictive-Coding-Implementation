@@ -188,8 +188,12 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         # Calculate validation accuracy and train accuracy for epoch
 
         acc_metric = np.equal(prediction_list, labels_list).sum()*1.0/len(prediction_list)
+        acc_metric_pc = np.nan
+        if pc_model:
+            acc_metric_pc = np.equal(prediction_list_pc, labels_list).sum()*1.0/len(prediction_list_pc)
 
         prediction_list_valid = []
+        prediction_list_pc_valid = []
         labels_list_valid = []
 
         #   Disable dropouts: model.eval()
@@ -214,14 +218,21 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             max_index = prediction.max(dim = 1)[1]
             prediction_list_valid.extend(list(max_index.to('cpu').numpy()))
             labels_list_valid.extend(labels.to('cpu').numpy())
-            
 
+            if pc_model:
+                prediction_pc = pc_model.batch_inference(features)
+                prediction_list_pc_valid.extend(list(torch.argmax(prediction_pc, dim=0)))
+            
         # Validation metrics 
         valid_accuracy = np.equal(prediction_list_valid, labels_list_valid).sum()*1.0/len(prediction_list_valid)
+        valid_accuracy_pc = np.nan
+
+        if pc_model:
+            valid_accuracy_pc = np.equal(prediction_list_pc_valid, labels_list_valid).sum()*1.0/len(prediction_list_pc_valid)
 
         # Print Loss and Accuracy 
-        print('Epoch: %d, (backprop) loss: %.3f, acc: %.3f, val acc: %.3f | (pc) ...' % 
-            (epoch + 1, running_loss / 2000, acc_metric, valid_accuracy))
+        print('Epoch: %d, (backprop) loss: %.3f, acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
+            (epoch + 1, running_loss / 500, acc_metric, valid_accuracy, acc_metric_pc, valid_accuracy_pc))
         
         running_loss = 0.0
         prediction_list = []
@@ -230,6 +241,10 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         # Store metrics for epoch
         metrics['backprop_train_acc'].append(acc_metric)
         metrics['backprop_val_acc'].append(valid_accuracy)
+
+        if pc_model:
+            metrics['pc_train_acc'].append(acc_metric_pc)
+            metrics['pc_val_acc'].append(valid_accuracy_pc)
 
     return metrics
 
@@ -263,6 +278,8 @@ def getPcModelArchitecture(input_size, output_size, num_layers, neurons_hidden_l
         neurons.append(neurons_hidden_layer)
 
     neurons.append(output_size)
+
+    return neurons
     
 
 

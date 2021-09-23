@@ -154,9 +154,19 @@ model.to(device) # Move model to device
 summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
 
 # Predictive Coding model
-pc_model_architecture = ModelUtils.getPcModelArchitecture()
+pc_model_architecture = ModelUtils.getPcModelArchitecture(
+    num_ftrs,
+    NUM_CLASSES,
+    HIDDEN_LAYERS,
+    FC_NEURONS
+)
+
 pc_model = PcTorch(pc_model_architecture)
-pc_model.set_training_parameters(INFERENCE_STEPS, ACTIVATION, OPTIMIZER, LR)
+pc_model.set_training_parameters(
+    INFERENCE_STEPS, 
+    ACTIVATION, 
+    OPTIMIZER, 
+    LR)
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()
