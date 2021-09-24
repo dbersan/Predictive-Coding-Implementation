@@ -6,6 +6,7 @@ import math
 import copy
 import sys
 from sklearn import metrics
+from torchvision import transforms
 # from util.util import dRelu, dSigmoid
 from snn import util
 
@@ -501,49 +502,19 @@ class PcTorch:
 
         return output
 
-    def single_batch_pass(self, train_data, train_labels, transpose=True):
-        """ Performs a single training pass on the Predictive Coding Network, which consists of: Feedforward, Inference and Weight Update steps. 
-
-        Accept an input in batch format. Applied pre activation function to input. 
-
-        Args:
-            train_data: a torch array with shape [batch_size, input_size] (if transpose=True)
-            train_labels: a torch array with shape [batch_size, num_classes] (if transpose=True), that is, a one-hot encoded batch array
-            transpose: Indicates whether to transpose the input  
-
-        Returns: 
-            - Output of last layer
-        """
-        out_layer = self.n_layers-1
-
-        train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) # Normalize to (0...1) ?
-
-        train_labels = torch.transpose(train_labels.to(dtype=PcTorch.dtype), 0, 1)
-        
-        # Feedforward
-        x = self.feedforward(train_data)
-        predictions = torch.clone(x[out_layer])
-
-        # Perform inference
-        x[out_layer] = train_labels
-        x,e = self.inference(x)
-
-        # Update weightsx
-        self.update_weights(x,e)
-
-        return predictions
-
-    def set_training_parameters(self, batch_size, max_it=10, activation='relu', optimizer='none', learning_rate=0.001):
+    def set_training_parameters(self, batch_size, max_it=10, activation='relu', optimizer='none', learning_rate=0.001, normalize_input=False):
 
         """ Sets the training parameters once. Used in conjunction with `single_batch_pass()`, so that parameters don't need to be set every batch call. `train()` does not require this function call, because it already receives the parameter list. 
         
         Args:
+            batch_size: size of batch
             max_it: maximum number of iterations when performing pc inference 
             activation: activation function
             optimizer: optimizer of training algorithm
             learning_rate: the learning rate for PC
+            normalize_input: Normalize input to range [0..1] according to some function. The function depends on the distribution of the input data and is hard coded on the function `normalize_input_function()`. 
         """
-        
+
         # batch_size
         self.batch_size = batch_size
         assert self.batch_size > 0
@@ -571,16 +542,66 @@ class PcTorch:
         # learning_rate
         self.alpha = learning_rate
 
+        # normalize_input
+        self.normalize_input = normalize_input
+
+    def single_batch_pass(self, train_data, train_labels, transpose=True):
+        """ Performs a single training pass on the Predictive Coding Network, which consists of: Feedforward, Inference and Weight Update steps. 
+
+        Accept an input in batch format. Applied pre activation function to input. 
+
+        Args:
+            train_data: a torch array with shape [batch_size, input_size] (if transpose=True)
+            train_labels: a torch array with shape [batch_size, num_classes] (if transpose=True), that is, a one-hot encoded batch array
+            transpose: Indicates whether to transpose the input  
+
+        Returns: 
+            - Output of last layer
+        """
+        out_layer = self.n_layers-1
+
+        if self.normalize_input:
+            train_data = PcTorch.normalize_input_function(train_data)
+
+        train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) # Normalize to (0...1) ?
+
+        train_labels = torch.transpose(train_labels.to(dtype=PcTorch.dtype), 0, 1)
+        
+        # Feedforward
+        x = self.feedforward(train_data)
+        predictions = torch.clone(x[out_layer])
+
+        # Perform inference
+        x[out_layer] = train_labels
+        x,e = self.inference(x)
+
+        # Update weightsx
+        self.update_weights(x,e)
+
+        return predictions
+
     def batch_inference(self, train_data, transpose=True):
         out_layer = self.n_layers-1
+
+        if self.normalize_input:
+            train_data = PcTorch.normalize_input_function(train_data)
+
         train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) # Normalize to (0...1) ?
 
         # Feedforward
         x = self.feedforward(train_data)
         return torch.clone(x[out_layer])
 
+    @staticmethod
+    def normalize_input_function(x): 
+        """
+        Normalizes input to range [0..1]. Uses an arbitrary function to rescale the data while preserving the information. 
 
+        Args:
+            x: Torch tensor to be normalized. 
 
+        """
+        return torch.clamp(torch.pow(x, 1.5)/4.0, 0.0, 1.0)
 
 
 

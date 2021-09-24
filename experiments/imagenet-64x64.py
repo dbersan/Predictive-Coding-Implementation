@@ -39,8 +39,8 @@ PRINT_EVERY_N_BATCHES = 2000
 # Predictive Coding parameters
 INFERENCE_STEPS = 40
 OPTIMIZER = 'adam'  
-ACTIVATION='sigmoid'
 ACTIVATION='relu'
+ACTIVATION='sigmoid'
 LR = 0.002
 
 # Dataset files
@@ -167,7 +167,8 @@ pc_model.set_training_parameters(
     INFERENCE_STEPS, 
     ACTIVATION, 
     OPTIMIZER, 
-    LR)
+    LR,
+    normalize_input=True)
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()
