@@ -128,7 +128,7 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         prediction_list_pc = []
         labels_list = []
 
-        print(f'\nEpoch: {epoch}')
+        print(f'\nEpoch: {epoch+1}')
 
         # Activate dropouts, batch norm...
         model.train()
@@ -168,7 +168,7 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             if pc_model:
                 labels_one_hot = F.one_hot(labels, num_classes=num_classes)
                 prediction_pc = pc_model.single_batch_pass(features, labels_one_hot)
-                prediction_list_pc.extend(list(torch.argmax(prediction_pc, dim=0)))
+                prediction_list_pc.extend(list(torch.argmax(prediction_pc, dim=0).to('cpu').numpy()))
                 
             # Calculate partial training accuracy
             if i % print_every_n_batches == print_every_n_batches-1:    # print every N mini-batches
@@ -221,7 +221,7 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
 
             if pc_model:
                 prediction_pc = pc_model.batch_inference(features)
-                prediction_list_pc_valid.extend(list(torch.argmax(prediction_pc, dim=0)))
+                prediction_list_pc_valid.extend(list(torch.argmax(prediction_pc, dim=0).to('cpu').numpy()))
             
         # Validation metrics 
         valid_accuracy = np.equal(prediction_list_valid, labels_list_valid).sum()*1.0/len(prediction_list_valid)

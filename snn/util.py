@@ -24,7 +24,7 @@ def clear():
         _ = system('clear') 
 
 def dRelu(x):
-    return torch.gt(x, torch.zeros(x.shape)).type(x.type())
+    return torch.gt(x, torch.zeros(x.shape, device=x.device)).type(x.type())
 
 def dLinear(x):
     return torch.ones(x.shape).type(x.type())

@@ -1,4 +1,5 @@
 import torch
+from torch._C import dtype
 import torch.nn
 import numpy as np
 import math
@@ -62,10 +63,10 @@ class PcTorch:
         self.sdb = {}
 
         for l in range(self.n_layers-1):
-            self.vdw[l] = torch.zeros(self.w[l].shape)
-            self.vdb[l] = torch.zeros(self.b[l].shape)
-            self.sdw[l] = torch.zeros(self.w[l].shape)
-            self.sdb[l] = torch.zeros(self.b[l].shape)
+            self.vdw[l] = torch.zeros(self.w[l].shape, dtype=PcTorch.dtype, device=PcTorch.device)
+            self.vdb[l] = torch.zeros(self.b[l].shape, dtype=PcTorch.dtype, device=PcTorch.device)
+            self.sdw[l] = torch.zeros(self.w[l].shape, dtype=PcTorch.dtype, device=PcTorch.device)
+            self.sdb[l] = torch.zeros(self.b[l].shape, dtype=PcTorch.dtype, device=PcTorch.device)
 
         self.alpha = 0.01
         self.b1 = 0.9
@@ -350,11 +351,12 @@ class PcTorch:
             The (relaxed) activations and layer-wise error neurons (batch form)
         """
         update_rate = self.beta
+        # batch_size = x[0].shape[1]
 
         # Calculate initial error neuron values: 
         # e[l] (x[l]-mu[l])/variance : assume variance is 1 
         e = {}
-        previous_error = torch.zeros(self.batch_size) # square of the sum of the of error neurons 
+        previous_error = torch.zeros(self.batch_size, dtype=PcTorch.dtype, device=PcTorch.device) # square of the sum of the of error neurons 
         for l in range(1,self.n_layers):
             fx = self.F(x[l-1])
             e[l] = x[l] - torch.matmul(self.w[l-1], fx ) - self.b[l-1]
@@ -362,7 +364,7 @@ class PcTorch:
 
         # Inference loop
         for i in range(self.max_it):
-            current_error = torch.zeros(self.batch_size)
+            current_error = torch.zeros(self.batch_size, dtype=PcTorch.dtype, device=PcTorch.device)
 
             # Update X
             for l in range(1,self.n_layers-1): # do not alter output (labels) layer 
@@ -531,7 +533,7 @@ class PcTorch:
 
         return predictions
 
-    def set_training_parameters(self, max_it=10, activation='relu', optimizer='none', learning_rate=0.001):
+    def set_training_parameters(self, batch_size, max_it=10, activation='relu', optimizer='none', learning_rate=0.001):
 
         """ Sets the training parameters once. Used in conjunction with `single_batch_pass()`, so that parameters don't need to be set every batch call. `train()` does not require this function call, because it already receives the parameter list. 
         
@@ -541,6 +543,10 @@ class PcTorch:
             optimizer: optimizer of training algorithm
             learning_rate: the learning rate for PC
         """
+        
+        # batch_size
+        self.batch_size = batch_size
+        assert self.batch_size > 0
 
         # max_it
         self.max_it = max_it

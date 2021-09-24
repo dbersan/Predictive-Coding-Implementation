@@ -33,7 +33,7 @@ USE_REDUCED_DATASET = True
 
 # Network Parameters
 FC_NEURONS = 2048
-HIDDEN_LAYERS = 2
+HIDDEN_LAYERS = 3
 PRINT_EVERY_N_BATCHES = 2000
 
 # Predictive Coding parameters
@@ -115,7 +115,7 @@ def imshow(img):
 
 train_it = train_generator.__iter__()
 data,labels = next(train_it)
-imshow(torchvision.utils.make_grid(data))
+# imshow(torchvision.utils.make_grid(data))
 
 
 # Pre-trained model for Transfer Learning
@@ -163,6 +163,7 @@ pc_model_architecture = ModelUtils.getPcModelArchitecture(
 
 pc_model = PcTorch(pc_model_architecture)
 pc_model.set_training_parameters(
+    TRAIN_BATCH_SIZE,
     INFERENCE_STEPS, 
     ACTIVATION, 
     OPTIMIZER, 
@@ -185,7 +186,8 @@ metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
             criterion,
             optimizer,
             device,
-            PRINT_EVERY_N_BATCHES)
+            PRINT_EVERY_N_BATCHES,
+            pc_model=pc_model)
 
 # Print Metrics
 ModelUtils.printMetrics(metrics)
