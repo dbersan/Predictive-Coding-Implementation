@@ -15,7 +15,7 @@ from torchinfo import summary
 import sys
 import os
 sys.path.append('.')
-from snn.Dataset import Dataset
+from snn.PcTorch import PcTorch
 
 # Import util functions 
 import experiments.ModelUtils as ModelUtils
@@ -25,7 +25,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Dataset Parameters
 IMAGE_SIZE = 224
-BATCH_SIZE = 32
+TRAIN_BATCH_SIZE = 32
 EPOCHS = 4
 VALID_PERC = 0.2 
 USE_REDUCED_DATASET = True
@@ -34,6 +34,13 @@ USE_REDUCED_DATASET = True
 FC_NEURONS = 2048
 HIDDEN_LAYERS = 3
 PRINT_EVERY_N_BATCHES = 2000
+
+# Predictive Coding parameters
+INFERENCE_STEPS = 40
+OPTIMIZER = 'adam'  
+ACTIVATION='relu'
+ACTIVATION='sigmoid'
+LR = 0.002
 
 # Dataset files
 FOLDER = '/data/datasets/imagenet/ILSVRC2012/train'
@@ -83,9 +90,9 @@ def load_split_train_test(datadir, valid_size = .2):
     train_sampler = SubsetRandomSampler(train_idx)
     valid_sampler = SubsetRandomSampler(valid_idx)
     train_generator = torch.utils.data.DataLoader(train_data,
-                   batch_size=BATCH_SIZE, sampler=train_sampler)
+                   batch_size=TRAIN_BATCH_SIZE, sampler=train_sampler)
     valid_generator = torch.utils.data.DataLoader(valid_data,
-                   batch_size=BATCH_SIZE, sampler=valid_sampler)
+                   batch_size=TRAIN_BATCH_SIZE, sampler=valid_sampler)
     return train_generator, valid_generator
 
 
@@ -129,7 +136,7 @@ feature_extractor = resnet
 num_ftrs = num_ftrs_resnet
 
 feature_extractor = feature_extractor.to(device)
-summary(feature_extractor, input_size=(BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
+summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
 # Fully connected layer model
@@ -139,14 +146,31 @@ model = ModelUtils.getFcModel(  num_ftrs,
                                 FC_NEURONS)
 
 model.to(device) # Move model to device
-summary(model,input_size=(BATCH_SIZE,num_ftrs))
+summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
+
+# Predictive Coding model
+pc_model_architecture = ModelUtils.getPcModelArchitecture(
+    num_ftrs,
+    NUM_CLASSES,
+    HIDDEN_LAYERS,
+    FC_NEURONS
+)
+
+pc_model = PcTorch(pc_model_architecture)
+pc_model.set_training_parameters(
+    TRAIN_BATCH_SIZE,
+    INFERENCE_STEPS, 
+    ACTIVATION, 
+    OPTIMIZER, 
+    LR,
+    normalize_input=True)
 
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.01)
 # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=LR, momentum=0.9)
 
 # Train models
 metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
@@ -159,7 +183,8 @@ metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
             criterion,
             optimizer,
             device,
-            PRINT_EVERY_N_BATCHES)
+            PRINT_EVERY_N_BATCHES,
+            pc_model=pc_model)
 
 # Print Metrics
 ModelUtils.printMetrics(metrics)
