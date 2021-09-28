@@ -78,7 +78,8 @@ FILE_PATHS_VALID = [FOLDER+file+SUFFIX for file in FILE_PATHS_VALID]
 # Datasets
 params = {'batch_size': TRAIN_BATCH_SIZE,
           'shuffle': True,
-          'num_workers': 0}
+          'num_workers': 0,
+          'drop_last': True}
 
 # Data transformer
 # transform must contain transforms.ToTensor(), or be omitted 

@@ -90,11 +90,10 @@ def load_split_train_test(datadir, valid_size = .2):
     train_sampler = SubsetRandomSampler(train_idx)
     valid_sampler = SubsetRandomSampler(valid_idx)
     train_generator = torch.utils.data.DataLoader(train_data,
-                   batch_size=TRAIN_BATCH_SIZE, sampler=train_sampler)
+                   batch_size=TRAIN_BATCH_SIZE, sampler=train_sampler, drop_last=True)
     valid_generator = torch.utils.data.DataLoader(valid_data,
-                   batch_size=TRAIN_BATCH_SIZE, sampler=valid_sampler)
+                   batch_size=TRAIN_BATCH_SIZE, sampler=valid_sampler, drop_last=True)
     return train_generator, valid_generator
-
 
 # Data generators
 train_generator, valid_generator = load_split_train_test(FOLDER, VALID_PERC)
