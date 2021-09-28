@@ -31,18 +31,12 @@ EPOCHS = 5
 USE_REDUCED_DATASET = True
 # VALID_PERC = 0.2 # Not used now, validation data is just one of the batches
 
-# Network Parameters
+# Network Architecture
 FC_NEURONS = 2048
-HIDDEN_LAYERS = 3
 PRINT_EVERY_N_BATCHES = 2000
 
 # Predictive Coding parameters
 INFERENCE_STEPS = 40
-OPTIMIZER = 'sgd'  
-ACTIVATION='sigmoid'
-ACTIVATION='relu'
-LR = 0.005
-MOMENTUM = 0.7
 
 # Dataset files
 FOLDER = 'datasets/imagenet-64x64/'
@@ -71,6 +65,23 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
     NUM_CLASSES = 20
     FC_NEURONS = 256
     PRINT_EVERY_N_BATCHES = 100
+
+# Tunnable hyper-parameters
+parameters = {
+    
+    # Common parameters
+    'optimizer': 'sgd',
+    'activation': 'relu',
+    'hidden_layers': 3,
+
+    # Backprop
+    'lr_bp': 0.001,
+    'momentum_bp': 0.9,
+
+    # PC
+    'lr_pc': 0.005,
+    'momentum_pc': 0.7
+}
 
 # Compose full data path
 FILE_PATHS_TRAIN = [FOLDER+file+SUFFIX for file in FILE_PATHS_TRAIN]
@@ -149,8 +160,9 @@ summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SI
 # Fully connected layer model
 model = ModelUtils.getFcModel(  num_ftrs, 
                                 NUM_CLASSES, 
-                                HIDDEN_LAYERS, 
-                                FC_NEURONS)
+                                parameters['hidden_layers'], 
+                                FC_NEURONS, 
+                                parameters['activation'] )
 
 model.to(device) # Move model to device
 summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
@@ -159,7 +171,7 @@ summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
 pc_model_architecture = ModelUtils.getPcModelArchitecture(
     num_ftrs,
     NUM_CLASSES,
-    HIDDEN_LAYERS,
+    parameters['hidden_layers'],
     FC_NEURONS
 )
 
@@ -167,17 +179,26 @@ pc_model = PcTorch(pc_model_architecture)
 pc_model.set_training_parameters(
     TRAIN_BATCH_SIZE,
     INFERENCE_STEPS, 
-    ACTIVATION, 
-    OPTIMIZER, 
-    LR,
-    MOMENTUM,
+    parameters['activation'], 
+    parameters['optimizer'], 
+    parameters['lr_pc'],
+    parameters['momentum_pc'],
     normalize_input=True)
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()
-# optimizer = optim.Adam(model.parameters(), lr=LR)
-# optimizer = optim.SGD(model.parameters(), lr=LR, momentum=0.9)
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+optimizer = 'None'
+
+if parameters['optimizer'] == 'adam':
+    optimizer = optim.SGD(model.parameters(), 
+        lr=parameters['lr_bp'], 
+        momentum=parameters['momentum_bp'])
+
+elif parameters['optimizer'] == 'sgd':
+    optimizer = optim.Adam(model.parameters(), 
+        lr=parameters['lr_bp'], 
+        momentum=parameters['momentum_bp'])
+
 
 # Train models
 metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(

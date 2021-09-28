@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 
 def getFcModel(input_size, output_size, num_layers, neurons_hidden_layer):
-
+    # TODO: Add support for different activation
     """Creates a Fully Connected model with Pytorch 
 
         Args:
