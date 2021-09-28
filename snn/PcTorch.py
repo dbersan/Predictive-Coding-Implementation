@@ -17,7 +17,7 @@ class PcTorch:
     ActivationFunctions = {'relu': torch.nn.ReLU(), 'sigmoid': torch.nn.Sigmoid() , 'linear': util.Linear}
     ActivationDerivatives = {'relu': util.dRelu, 'sigmoid': util.dSigmoid, 'linear': util.dLinear}
     PreprocessingFunctions = {'relu': util.preRelu, 'sigmoid': util.preSigmoid, 'linear': util.preLinear}
-    Optimizers = ['none', 'adam', 'rmsprop']
+    Optimizers = ['none', 'adam', 'sgd']
 
     def __init__(self, neurons):
         """
@@ -435,8 +435,8 @@ class PcTorch:
 
             # Switch optimizer
             if self.optimizer == 'none':
-                self.w[l] += 0.05*dw[l]
-                self.b[l] += 0.05*db[l]
+                self.b[l] += self.alpha*db[l]
+                self.w[l] += self.alpha*dw[l]
 
             elif self.optimizer == 'adam':
                 vdb[l] = self.b1*vdb[l] + (1-self.b1)*db[l]
@@ -445,17 +445,17 @@ class PcTorch:
                 sdb[l] = self.b2*sdb[l] + (1-self.b2)*(db[l].square())
                 sdw[l] = self.b2*sdw[l] + (1-self.b2)*(dw[l].square())
                 
-                #vdb_corr = vdb[l]/(1 - self.b1**self.t)
-                #vdw_corr = vdw[l]/(1 - self.b1**self.t)
-                #sdb_corr = sdb[l]/(1 - self.b2**self.t)
-                #sdw_corr = sdw[l]/(1 - self.b2**self.t)
-                #self.b[l] = self.b[l] + self.alpha*vdb_corr/(torch.sqrt(sdb_corr) + self.epslon)
-                #self.w[l] = self.w[l] + self.alpha*vdw_corr/(torch.sqrt(sdw_corr) + self.epslon)
-
                 x1 = self.alpha * np.sqrt(1 - self.b2**self.t) / (1 - self.b1**self.t) 
                 self.b[l] = self.b[l] + x1* torch.div( vdb[l] , (torch.sqrt(sdb[l]) + self.epslon))
                 self.w[l] = self.w[l] + x1* torch.div( vdw[l] , (torch.sqrt(sdw[l]) + self.epslon)) 
                 self.t += 1
+
+            elif self.optimizer == 'sgd':
+                vdb[l] = self.b1*vdb[l] + self.alpha*db[l]
+                vdw[l] = self.b1*vdw[l] + self.alpha*dw[l]
+
+                self.b[l] += vdb[l]
+                self.w[l] += vdw[l]
 
         self.vdb = vdb
         self.vdw = vdw
@@ -502,7 +502,7 @@ class PcTorch:
 
         return output
 
-    def set_training_parameters(self, batch_size, max_it=10, activation='relu', optimizer='none', learning_rate=0.001, normalize_input=False):
+    def set_training_parameters(self, batch_size, max_it=10, activation='relu', optimizer='none', learning_rate=0.001, momentum=0.9, normalize_input=False):
 
         """ Sets the training parameters once. Used in conjunction with `single_batch_pass()`, so that parameters don't need to be set every batch call. `train()` does not require this function call, because it already receives the parameter list. 
         
@@ -541,6 +541,9 @@ class PcTorch:
 
         # learning_rate
         self.alpha = learning_rate
+
+        # momentum
+        self.b1 = momentum
 
         # normalize_input
         self.normalize_input = normalize_input
@@ -586,7 +589,7 @@ class PcTorch:
         if self.normalize_input:
             train_data = PcTorch.normalize_input_function(train_data)
 
-        train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) # Normalize to (0...1) ?
+        train_data = self.preprocessing(torch.transpose(train_data.to(dtype=PcTorch.dtype), 0, 1)) 
 
         # Feedforward
         x = self.feedforward(train_data)

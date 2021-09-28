@@ -37,10 +37,11 @@ PRINT_EVERY_N_BATCHES = 2000
 
 # Predictive Coding parameters
 INFERENCE_STEPS = 40
-OPTIMIZER = 'adam'  
-ACTIVATION='relu'
+OPTIMIZER = 'sgd'  
 ACTIVATION='sigmoid'
-LR = 0.002
+ACTIVATION='relu'
+LR = 0.005
+MOMENTUM = 0.7
 
 # Dataset files
 FOLDER = '/data/datasets/imagenet/ILSVRC2012/train'
@@ -107,7 +108,7 @@ def imshow(img):
 
 train_it = train_generator.__iter__()
 data,labels = next(train_it)
-imshow(torchvision.utils.make_grid(data))
+#imshow(torchvision.utils.make_grid(data))
 
 
 # Resnet
@@ -162,6 +163,7 @@ pc_model.set_training_parameters(
     ACTIVATION, 
     OPTIMIZER, 
     LR,
+    MOMENTUM,
     normalize_input=True)
 
 
@@ -169,7 +171,7 @@ pc_model.set_training_parameters(
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.01)
 # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.SGD(model.parameters(), lr=LR, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Train models
 metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(

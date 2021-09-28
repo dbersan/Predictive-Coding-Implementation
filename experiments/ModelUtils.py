@@ -133,9 +133,9 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         # Activate dropouts, batch norm...
         model.train()
         feature_extractor.train()
-
+        
         for i, (data, labels) in enumerate(train_generator):
-            
+
             # Get samples
             data = data.to(device)
             labels = labels.to(device)
@@ -182,7 +182,7 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
 
                 print('batch num: %5d, (backprop) acc: %.3f | (pc) acc: %.3f' % 
                     (i + 1, acc_metric, acc_metric_pc))
-
+        
         # Finished epoch
 
         # Calculate validation accuracy and train accuracy for epoch
@@ -191,11 +191,11 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         acc_metric_pc = np.nan
         if pc_model:
             acc_metric_pc = np.equal(prediction_list_pc, labels_list).sum()*1.0/len(prediction_list_pc)
-
+        
         prediction_list_valid = []
         prediction_list_pc_valid = []
         labels_list_valid = []
-
+        
         #   Disable dropouts: model.eval()
         model.eval()
         feature_extractor.eval()
