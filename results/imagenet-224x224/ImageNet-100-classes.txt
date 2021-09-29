@@ -1,0 +1,8 @@
+All experiments done using: 
+    - ImageNet 224x224 dataset
+    - 100 classes
+    - 256 FC neurons
+    - Epochs: 10
+    - Batch size: 32
+
+Experiment 1: 
