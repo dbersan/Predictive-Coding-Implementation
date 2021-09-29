@@ -5,4 +5,83 @@ All experiments done using:
     - Epochs: 10
     - Batch size: 32
 
+--------------------------------------------
 Experiment 1: 
+
+parameters = {
+    
+    # Common parameters
+    'optimizer': 'adam', # OK
+    'activation': 'sigmoid', # Vary
+    'hidden_layers': 2, 
+
+    # Backprop
+    'dropout_bp': False, # Vary
+    'lr_bp': 0.001, # OK
+    'momentum_bp': 0.9, # OK 
+
+    # PC
+    'lr_pc': 0.003, # OK
+    'momentum_pc': 0.9 # OK
+} 
+
+--------------------------------------------
+Experiment 2: 
+
+parameters = {
+    
+    # Common parameters
+    'optimizer': 'adam', # OK
+    'activation': 'relu', # Vary
+    'hidden_layers': 2, 
+
+    # Backprop
+    'dropout_bp': False, # Vary
+    'lr_bp': 0.001, # OK
+    'momentum_bp': 0.9, # OK 
+
+    # PC
+    'lr_pc': 0.003, # OK
+    'momentum_pc': 0.9 # OK
+} 
+
+--------------------------------------------
+Experiment 3: 
+
+parameters = {
+    
+    # Common parameters
+    'optimizer': 'adam', # OK
+    'activation': 'sigmoid', # Vary
+    'hidden_layers': 2, 
+
+    # Backprop
+    'dropout_bp': True, # Vary
+    'lr_bp': 0.001, # OK
+    'momentum_bp': 0.9, # OK 
+
+    # PC
+    'lr_pc': 0.003, # OK
+    'momentum_pc': 0.9 # OK
+} 
+
+--------------------------------------------
+Experiment 4: 
+
+parameters = {
+    
+    # Common parameters
+    'optimizer': 'adam', # OK
+    'activation': 'relu', # Vary
+    'hidden_layers': 2, 
+
+    # Backprop
+    'dropout_bp': True, # Vary
+    'lr_bp': 0.001, # OK
+    'momentum_bp': 0.9, # OK 
+
+    # PC
+    'lr_pc': 0.003, # OK
+    'momentum_pc': 0.9 # OK
+} 
+

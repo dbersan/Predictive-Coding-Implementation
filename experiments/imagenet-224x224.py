@@ -26,7 +26,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Dataset Parameters
 IMAGE_SIZE = 224
 TRAIN_BATCH_SIZE = 32
-EPOCHS = 4
+EPOCHS = 10
 VALID_PERC = 0.2 
 USE_REDUCED_DATASET = True
 
@@ -50,18 +50,18 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
 parameters = {
     
     # Common parameters
-    'optimizer': 'sgd',
-    'activation': 'sigmoid',
-    'hidden_layers': 2,
+    'optimizer': 'adam', # OK
+    'activation': 'sigmoid', # Vary
+    'hidden_layers': 2, # Vary?
 
     # Backprop
-    'dropout_bp': False,
-    'lr_bp': 0.001,
-    'momentum_bp': 0.9, 
+    'dropout_bp': False, # Vary
+    'lr_bp': 0.001, # OK
+    'momentum_bp': 0.9, # OK 
 
     # PC
-    'lr_pc': 0.004,
-    'momentum_pc': 0.9
+    'lr_pc': 0.003, # OK
+    'momentum_pc': 0.9 # OK
 } 
 
 # Count number of classes

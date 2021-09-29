@@ -196,7 +196,8 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
     optimizer, 
     device,
     print_every_n_batches,
-    pc_model = None):
+    pc_model = None,
+    verbose = True):
 
     """ Trains the FC layer and a Predictive Coding network simultaneously, given an image dataset generator and a feature extractor
 
@@ -230,7 +231,8 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
         prediction_list_pc = []
         labels_list = []
 
-        print(f'\nEpoch: {epoch+1}')
+        if verbose:
+            print(f'\nEpoch: {epoch+1}')
 
         # Activate dropouts, batch norm...
         model.train()
@@ -282,8 +284,9 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
                 if pc_model:
                     acc_metric_pc = np.equal(prediction_list_pc, labels_list).sum()*1.0/len(prediction_list_pc)
 
-                print('batch num: %5d, (backprop) acc: %.3f | (pc) acc: %.3f' % 
-                    (i + 1, acc_metric, acc_metric_pc))
+                if verbose:
+                    print('batch num: %5d, (backprop) acc: %.3f | (pc) acc: %.3f' % 
+                        (i + 1, acc_metric, acc_metric_pc))
         
         # Finished epoch
 
