@@ -4,8 +4,13 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 
-def getFcModel(input_size, output_size, num_layers, neurons_hidden_layer):
-    # TODO: Add support for different activation
+def getFcModel(
+        input_size, 
+        output_size, 
+        num_layers, 
+        neurons_hidden_layer, 
+        activation, 
+        dropout ):
     """Creates a Fully Connected model with Pytorch 
 
         Args:
@@ -20,12 +25,24 @@ def getFcModel(input_size, output_size, num_layers, neurons_hidden_layer):
 
     class FcModel(nn.Module):
 
-        def __init__(self):
+        def __init__(self, activation, dropout):
             super(FcModel, self).__init__()
 
-            self.dropout1 = nn.Dropout(0.20)
+            self.dropout = dropout
+            self.dropout1 = nn.Dropout(0.10)
             self.dropout2 = nn.Dropout(0.50)
             self.dropout3 = nn.Dropout(0.50)
+            self.dropout4 = nn.Dropout(0.50)
+            self.dropout5 = nn.Dropout(0.50)
+
+            if activation=='relu':
+                self.activation_f = F.relu
+            
+            elif activation == 'sigmoid':
+                self.activation_f = torch.sigmoid
+
+            else:
+                raise Exception("Activation not recognized")
 
             # 1 Layer
             if num_layers == 1:
@@ -36,47 +53,132 @@ def getFcModel(input_size, output_size, num_layers, neurons_hidden_layer):
                 self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
                 self.fc2 = nn.Linear(neurons_hidden_layer, output_size)
 
-            # Extra layers ... 
+            # 3 Layers
             if num_layers == 3:
                 self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
                 self.fc2 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
                 self.fc3 = nn.Linear(neurons_hidden_layer, output_size)
-                
+            
+            # 4 Layers
+            if num_layers == 4:
+                self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
+                self.fc2 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc3 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc4 = nn.Linear(neurons_hidden_layer, output_size)
+
+            # 5 Layers
+            if num_layers == 5:
+                self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
+                self.fc2 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc3 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc4 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc5 = nn.Linear(neurons_hidden_layer, output_size)
 
         def forward(self, x):
             x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
             
-            # 1 Layer
             if num_layers == 1:
-                x = self.dropout1(x)
+
+                if self.dropout:
+                    x = self.dropout1(x)
+
                 x = self.fc1(x)
 
-            # 2 Layers
-            if num_layers == 2:
-                # x = self.dropout1(x)
+            elif num_layers == 2:
+                if self.dropout:
+                    x = self.dropout1(x)
+
                 x = self.fc1(x)
-                x = F.relu(x)
-                x = self.dropout2(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout2(x)
+
                 x = self.fc2(x)
 
-            if num_layers == 3:
-                x = self.dropout1(x)
+            elif num_layers == 3:
+                if self.dropout:
+                    x = self.dropout1(x)
+
                 x = self.fc1(x)
-                x = F.relu(x)
-                x = self.dropout2(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout2(x)
+
                 x = self.fc2(x)
-                x = F.relu(x)
-                x = self.dropout3(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout3(x)
+
                 x = self.fc3(x)
+
+            elif num_layers == 4:
+                if self.dropout:
+                    x = self.dropout1(x)
+
+                x = self.fc1(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout2(x)
+
+                x = self.fc2(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout3(x)
+
+                x = self.fc3(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout4(x)
+
+                x = self.fc4(x)
+
+            elif num_layers == 5:
+                if self.dropout:
+                    x = self.dropout1(x)
+
+                x = self.fc1(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout2(x)
+
+                x = self.fc2(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout3(x)
+
+                x = self.fc3(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout4(x)
+
+                x = self.fc4(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout5(x)
+
+                x = self.fc5(x)
+
+            else: 
+                raise Exception("Number of hidden layers out of range")
 
             return x
 
-    model = FcModel()
+    model = FcModel(activation, dropout)
 
     # Initialize model weights
     def init_weights(m):
         if isinstance(m, nn.Linear):
-            torch.nn.init.xavier_uniform(m.weight)
+            torch.nn.init.xavier_uniform_(m.weight)
             m.bias.data.fill_(0.01)
 
     model.apply(init_weights)
@@ -231,8 +333,8 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             valid_accuracy_pc = np.equal(prediction_list_pc_valid, labels_list_valid).sum()*1.0/len(prediction_list_pc_valid)
 
         # Print Loss and Accuracy 
-        print('Epoch: %d, (backprop) loss: %.3f, acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
-            (epoch + 1, running_loss / 500, acc_metric, valid_accuracy, acc_metric_pc, valid_accuracy_pc))
+        print('Epoch: %d, (backprop) acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
+            (epoch + 1, acc_metric, valid_accuracy, acc_metric_pc, valid_accuracy_pc))
         
         running_loss = 0.0
         prediction_list = []

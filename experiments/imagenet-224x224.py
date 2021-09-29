@@ -51,17 +51,18 @@ parameters = {
     
     # Common parameters
     'optimizer': 'sgd',
-    'activation': 'relu',
-    'hidden_layers': 3,
+    'activation': 'sigmoid',
+    'hidden_layers': 2,
 
     # Backprop
+    'dropout_bp': False,
     'lr_bp': 0.001,
-    'momentum_bp': 0.9,
+    'momentum_bp': 0.9, 
 
     # PC
-    'lr_pc': 0.005,
-    'momentum_pc': 0.7
-}
+    'lr_pc': 0.004,
+    'momentum_pc': 0.9
+} 
 
 # Count number of classes
 subfolders = [ f.path for f in os.scandir(FOLDER) if f.is_dir() ]
@@ -147,7 +148,7 @@ feature_extractor = resnet
 num_ftrs = num_ftrs_resnet
 
 feature_extractor = feature_extractor.to(device)
-summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
+# summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
 # Fully connected layer model
@@ -155,10 +156,11 @@ model = ModelUtils.getFcModel(  num_ftrs,
                                 NUM_CLASSES, 
                                 parameters['hidden_layers'], 
                                 FC_NEURONS, 
-                                parameters['activation'] )
+                                parameters['activation'],
+                                parameters['dropout_bp'] )
 
 model.to(device) # Move model to device
-summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
+# summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
 
 # Predictive Coding model
 pc_model_architecture = ModelUtils.getPcModelArchitecture(
