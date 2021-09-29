@@ -29,7 +29,7 @@ def getFcModel(
             super(FcModel, self).__init__()
 
             self.dropout = dropout
-            self.dropout1 = nn.Dropout(0.10)
+            self.dropout1 = nn.Dropout(0.05)
             self.dropout2 = nn.Dropout(0.50)
             self.dropout3 = nn.Dropout(0.50)
             self.dropout4 = nn.Dropout(0.50)
