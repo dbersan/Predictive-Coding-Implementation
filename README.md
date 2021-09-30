@@ -24,24 +24,24 @@ We compare the performance of a typical Backprop network againt the Predictive C
 python datasets/imagenet-64x64-reduced/reduce-dataset.py
 ```
 
-3. Update the variable `NUM_CLASSES` in `experiments/imagenet-64x64.py` to match the number of classes selected on previous step
+3. Update the variable `NUM_CLASSES` in `examples/imagenet-64x64.py` to match the number of classes selected on previous step
 
 4. Train the backpropagation + predictive coding networks
 
 ```bash
-python -W ignore experiments/imagenet-64x64.py
+python -W ignore examples/imagenet-64x64.py
 ```
 
 ### "Full" image size (224x224) ImageNet
 
-1. Download the entire ImageNet dataset (from somewhere) and update the variable `FOLDER` in the file `experiments/imagenet-224x224.py` to match the location of the dataset. 
+1. Download the entire ImageNet dataset (from somewhere) and update the variable `FOLDER` in the file `examples/imagenet-224x224.py` to match the location of the dataset. 
 
 2. (optional) Select only some folders of some classes from the dataset, and put them inside the folder `datasets/imagenet-reduced/train/` and `datasets/imagenet-reduced/val/`. 
 
 4. Train the backpropagation + predictive coding networks
 
 ```bash
-python -W ignore experiments/imagenet-224x224.py
+python -W ignore examples/imagenet-224x224.py
 ```
 
 
