@@ -29,11 +29,13 @@ def getFcModel(
             super(FcModel, self).__init__()
 
             self.dropout = dropout
-            self.dropout1 = nn.Dropout(0.05)
-            self.dropout2 = nn.Dropout(0.50)
-            self.dropout3 = nn.Dropout(0.50)
-            self.dropout4 = nn.Dropout(0.50)
-            self.dropout5 = nn.Dropout(0.50)
+
+            if self.dropout:
+                self.dropout1 = nn.Dropout(0.05)
+                self.dropout2 = nn.Dropout(0.50)
+                self.dropout3 = nn.Dropout(0.50)
+                self.dropout4 = nn.Dropout(0.50)
+                self.dropout5 = nn.Dropout(0.50)
 
             if activation=='relu':
                 self.activation_f = F.relu
@@ -336,8 +338,9 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             valid_accuracy_pc = np.equal(prediction_list_pc_valid, labels_list_valid).sum()*1.0/len(prediction_list_pc_valid)
 
         # Print Loss and Accuracy 
-        print('Epoch: %d, (backprop) acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
-            (epoch + 1, acc_metric, valid_accuracy, acc_metric_pc, valid_accuracy_pc))
+        if verbose:
+            print('Epoch: %d, (backprop) acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
+                (epoch + 1, acc_metric, valid_accuracy, acc_metric_pc, valid_accuracy_pc))
         
         running_loss = 0.0
         prediction_list = []
