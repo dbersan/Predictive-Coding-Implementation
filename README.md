@@ -10,16 +10,38 @@ There are many flavors of the Predictive Coding framework, and one in particular
 
 ## Run Latest Model 
 
-We compare the performance of a typical Backprop network againt the Predictive Coding implementation, on the Imagenet 64x64 dataset. 
+We compare the performance of a typical Backprop network againt the Predictive Coding implementation, on the Imagenet dataset. 
 
-To run these exaples, you'll need at least around 16 Gb of *free* RAM, because the whole dataset needs to fit into memory. Otherwise, you may easily select a subset of the data by modifying the code. 
+**Run all the commands below from the root folder**
+
+### Reduced (64x64) ImageNet
 
 1. Download the `Train(64x64) part1`, `Train(64x64) part2` and `Val(64x64)` (select `npz format`) from the [imagenet website](https://image-net.org/download-images). Extract inside `datasets/imagenet-64x64/`.
 
-2. To run the Backpropagation network, run...
+2. (optional) Create subsampled dataset (select desired class indices modifying `DESIRED_CLASSES` in the file `reduce-dataset.py`) and then 
 
-3. To run the Predictive Coding network, run...
+```bash
+python datasets/imagenet-64x64-reduced/reduce-dataset.py
+```
 
+3. Update the variable `NUM_CLASSES` in `experiments/imagenet-64x64.py` to match the number of classes selected on previous step
 
+4. Train the backpropagation + predictive coding networks
+
+```bash
+python -W ignore experiments/imagenet-64x64.py
+```
+
+### "Full" image size (224x224) ImageNet
+
+1. Download the entire ImageNet dataset (from somewhere) and update the variable `FOLDER` in the file `experiments/imagenet-224x224.py` to match the location of the dataset. 
+
+2. (optional) Select only some folders of some classes from the dataset, and put them inside the folder `datasets/imagenet-reduced/train/` and `datasets/imagenet-reduced/val/`. 
+
+4. Train the backpropagation + predictive coding networks
+
+```bash
+python -W ignore experiments/imagenet-224x224.py
+```
 
 
