@@ -27,7 +27,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 IMAGE_SIZE = 64
 NUM_CLASSES = 1000
 TRAIN_BATCH_SIZE = 32
-EPOCHS = 2
+EPOCHS = 4
 USE_REDUCED_DATASET = True
 # VALID_PERC = 0.2 # Not used now, validation data is just one of the batches
 
@@ -63,15 +63,15 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
     FILE_PATHS_TRAIN = ['dataset_training_reduced_1']
     FILE_PATHS_VALID = ['dataset_valid_reduced']
     NUM_CLASSES = 20
-    FC_NEURONS = 128
+    FC_NEURONS = 512
     PRINT_EVERY_N_BATCHES = 100
 
 # Tunnable hyper-parameters
 parameters = {
     
     # Common parameters
-    'optimizer': 'sgd',
-    'activation': 'relu',
+    'optimizer': 'adam',
+    'activation': 'sigmoid',
     'hidden_layers': 2,
 
     # Backprop
@@ -193,12 +193,12 @@ pc_model.set_training_parameters(
 criterion = nn.CrossEntropyLoss()
 optimizer = 'None'
 
-if parameters['optimizer'] == 'adam':
+if parameters['optimizer'] == 'sgd':
     optimizer = optim.SGD(model.parameters(), 
         lr=parameters['lr_bp'], 
         momentum=parameters['momentum_bp'])
 
-elif parameters['optimizer'] == 'sgd':
+elif parameters['optimizer'] == 'adam':
     optimizer = optim.Adam(model.parameters(), 
         lr=parameters['lr_bp'], 
         betas=(parameters['momentum_bp'], 0.999))

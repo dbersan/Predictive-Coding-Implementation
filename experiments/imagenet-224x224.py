@@ -186,12 +186,12 @@ pc_model.set_training_parameters(
 criterion = nn.CrossEntropyLoss()
 optimizer = 'None'
 
-if parameters['optimizer'] == 'adam':
+if parameters['optimizer'] == 'sgd':
     optimizer = optim.SGD(model.parameters(), 
         lr=parameters['lr_bp'], 
         momentum=parameters['momentum_bp'])
 
-elif parameters['optimizer'] == 'sgd':
+elif parameters['optimizer'] == 'adam':
     optimizer = optim.Adam(model.parameters(), 
         lr=parameters['lr_bp'], 
         betas=(parameters['momentum_bp'], 0.999))
