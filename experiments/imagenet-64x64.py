@@ -32,7 +32,7 @@ USE_REDUCED_DATASET = True
 # VALID_PERC = 0.2 # Not used now, validation data is just one of the batches
 
 # Network Architecture
-FC_NEURONS = 2048
+FC_NEURONS = 2048 # deprecated, set at the `parameters` dictionary
 PRINT_EVERY_N_BATCHES = 2000
 
 # Predictive Coding parameters
@@ -70,18 +70,19 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
 parameters = {
     
     # Common parameters
-    'optimizer': 'adam',
-    'activation': 'sigmoid',
+    'optimizer': 'sgd',
+    'activation': 'relu',
     'hidden_layers': 2,
+    'fc_neurons': 512,
 
     # Backprop
-    'dropout_bp': True,
+    'dropout_bp': False,
     'lr_bp': 0.001,
     'momentum_bp': 0.9,
 
     # PC
-    'lr_pc': 0.005,
-    'momentum_pc': 0.7
+    'lr_pc': 0.003,
+    'momentum_pc': 0.9
 }
 
 # Compose full data path
@@ -164,7 +165,7 @@ feature_extractor = feature_extractor.to(device)
 model = ModelUtils.getFcModel(  num_ftrs, 
                                 NUM_CLASSES, 
                                 parameters['hidden_layers'], 
-                                FC_NEURONS, 
+                                parameters['fc_neurons'], 
                                 parameters['activation'],
                                 parameters['dropout_bp'] )
 
@@ -176,7 +177,7 @@ pc_model_architecture = ModelUtils.getPcModelArchitecture(
     num_ftrs,
     NUM_CLASSES,
     parameters['hidden_layers'],
-    FC_NEURONS
+    parameters['fc_neurons']
 )
 
 pc_model = PcTorch(pc_model_architecture)
