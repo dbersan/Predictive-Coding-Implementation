@@ -144,6 +144,7 @@ for p in vgg16.parameters():
     p.requires_grad = False
 num_ftrs_vgg16 = 512*7*7
 
+# Choose extractor
 feature_extractor = resnet
 num_ftrs = num_ftrs_resnet
 
@@ -183,9 +184,17 @@ pc_model.set_training_parameters(
 
 # Loss and optmizer
 criterion = nn.CrossEntropyLoss()
-# optimizer = optim.Adam(model.parameters(), lr=0.01)
-# optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+optimizer = 'None'
+
+if parameters['optimizer'] == 'adam':
+    optimizer = optim.SGD(model.parameters(), 
+        lr=parameters['lr_bp'], 
+        momentum=parameters['momentum_bp'])
+
+elif parameters['optimizer'] == 'sgd':
+    optimizer = optim.Adam(model.parameters(), 
+        lr=parameters['lr_bp'], 
+        betas=(parameters['momentum_bp'], 0.999))
 
 # Train models
 metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(

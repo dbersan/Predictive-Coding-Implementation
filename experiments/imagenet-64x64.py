@@ -27,7 +27,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 IMAGE_SIZE = 64
 NUM_CLASSES = 1000
 TRAIN_BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 2
 USE_REDUCED_DATASET = True
 # VALID_PERC = 0.2 # Not used now, validation data is just one of the batches
 
@@ -63,7 +63,7 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
     FILE_PATHS_TRAIN = ['dataset_training_reduced_1']
     FILE_PATHS_VALID = ['dataset_valid_reduced']
     NUM_CLASSES = 20
-    FC_NEURONS = 256
+    FC_NEURONS = 128
     PRINT_EVERY_N_BATCHES = 100
 
 # Tunnable hyper-parameters
@@ -72,9 +72,10 @@ parameters = {
     # Common parameters
     'optimizer': 'sgd',
     'activation': 'relu',
-    'hidden_layers': 3,
+    'hidden_layers': 2,
 
     # Backprop
+    'dropout_bp': True,
     'lr_bp': 0.001,
     'momentum_bp': 0.9,
 
@@ -130,7 +131,7 @@ train_it = train_generator.__iter__()
 data,labels = next(train_it)
 # imshow(torchvision.utils.make_grid(data))
 
-
+# Resnet
 # Pre-trained model for Transfer Learning
 # resnet = models.resnet152(pretrained=True)
 # num_ftrs_resnet = resnet.fc.in_features # Number of features before FC
@@ -144,17 +145,19 @@ for param in resnet.parameters():
     param.requires_grad = False
 resnet.fc = nn.Flatten()
 
+# Vgg16
 vgg16 = models.vgg16(pretrained=True)
 vgg16 = vgg16.features
 for p in vgg16.parameters():
     p.requires_grad = False
 num_ftrs_vgg16 = 512*2*2
 
+# Choose extractor
 feature_extractor = resnet
 num_ftrs = num_ftrs_resnet
 
 feature_extractor = feature_extractor.to(device)
-summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
+# summary(feature_extractor, input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_SIZE, IMAGE_SIZE))
 
 
 # Fully connected layer model
@@ -162,7 +165,8 @@ model = ModelUtils.getFcModel(  num_ftrs,
                                 NUM_CLASSES, 
                                 parameters['hidden_layers'], 
                                 FC_NEURONS, 
-                                parameters['activation'] )
+                                parameters['activation'],
+                                parameters['dropout_bp'] )
 
 model.to(device) # Move model to device
 summary(model,input_size=(TRAIN_BATCH_SIZE,num_ftrs))
@@ -197,7 +201,7 @@ if parameters['optimizer'] == 'adam':
 elif parameters['optimizer'] == 'sgd':
     optimizer = optim.Adam(model.parameters(), 
         lr=parameters['lr_bp'], 
-        momentum=parameters['momentum_bp'])
+        betas=(parameters['momentum_bp'], 0.999))
 
 
 # Train models
