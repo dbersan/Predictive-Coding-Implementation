@@ -1,0 +1,706 @@
+=======================================================
+                    BASE EXPERIMENT                    
+=======================================================
+    
+    All other experiments will be based on this one
+
+    All experiments done using: 
+    - ImageNet 224x224 dataset
+    - 50 classes
+    - Epochs: 20
+    - Batch size: 32
+
+    Experiment 1:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+=======================================================
+                    VARY DEPTH                    
+=======================================================
+
+    Varies the number of hidden layers 
+
+    Experiment 1: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 1, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 2: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 3: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 3, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 4: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 4, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 5: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 5, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 6: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 1, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 7: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 8: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 3, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 9: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 4, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 10: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 5, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+=======================================================
+                    VARY FC NEURONS                    
+=======================================================
+
+    Vary the number of neurons in the FC layer
+
+    Experiment 1: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 64,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 2: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 128,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 3: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 4: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 512,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 5: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 1024,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 6: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 64,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 7: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 128,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 8: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 9: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 512,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 10: 
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 1024,
+
+        # Backprop
+        'dropout_bp': True, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+=======================================================
+                    VARY LR                    
+=======================================================
+
+    Experiment 1:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.0002, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.0002, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 2:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.0005, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.0005, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 3:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.001, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 4:
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.002, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.002, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 5:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.004, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.004, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 6:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.008, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.008, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 7:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.01, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.01, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+
+=======================================================
+            VARY OPTIMIZER/ACTIVATION                    
+=======================================================
+
+    Experiment 1:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 2:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'adam',
+        'activation': 'relu', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+    Experiment 3:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'sgd',
+        'activation': 'relu', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+
+    Experiment 4:
+
+    parameters = {
+        
+        # Common parameters
+        'optimizer': 'sgd',
+        'activation': 'sigmoid', 
+        'hidden_layers': 2, 
+        'fc_neurons': 256,
+
+        # Backprop
+        'dropout_bp': False, 
+        'lr_bp': 0.001, 
+        'momentum_bp': 0.9, 
+
+        # PC
+        'lr_pc': 0.003, 
+        'momentum_pc': 0.9 
+    } 
+    -----------------------------
+
+
