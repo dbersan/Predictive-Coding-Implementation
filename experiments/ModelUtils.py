@@ -361,21 +361,36 @@ def printMetrics(metrics):
             metrics: Output of `train_TransferLearning_Simultaneous_Backprop_PC()`
 
     """
+    
+    print("RESULTS:\n")
 
-    print("------------------------------------------------")
-    print("End of training session\n")
+    PRECISION = 3
 
-    print("backprop_train_acc=", end="", flush=True)
-    print(metrics['backprop_train_acc'])
+    # backprop_train_acc
+    print("backprop_train_acc = [", end="", flush=True)
+    for i in range(len(metrics['backprop_train_acc'])-1):
+        print(f"{round(metrics['backprop_train_acc'][i],PRECISION)}, ", end="", flush=True)
+    print(f"{round(metrics['backprop_train_acc'][-1],PRECISION)}]")
 
-    print("backprop_val_acc=", end="", flush=True)
-    print(metrics['backprop_val_acc'])
+    # backprop_val_acc
+    print("backprop_val_acc   = [", end="", flush=True)
+    for i in range(len(metrics['backprop_val_acc'])-1):
+        print(f"{round(metrics['backprop_val_acc'][i],PRECISION)}, ", end="", flush=True)
+    print(f"{round(metrics['backprop_val_acc'][-1],PRECISION)}]")
 
-    print("pc_train_acc=", end="", flush=True)
-    print(metrics['pc_train_acc'])
+    # pc_train_acc
+    print("pc_train_acc       = [", end="", flush=True)
+    for i in range(len(metrics['pc_train_acc'])-1):
+        print(f"{round(metrics['pc_train_acc'][i],PRECISION)}, ", end="", flush=True)
+    print(f"{round(metrics['pc_train_acc'][-1],PRECISION)}]")
 
-    print("pc_val_acc=", end="", flush=True)
-    print(metrics['pc_val_acc'])
+    # pc_val_acc
+    print("pc_val_acc         = [", end="", flush=True)
+    for i in range(len(metrics['pc_val_acc'])-1):
+        print(f"{round(metrics['pc_val_acc'][i],PRECISION)}, ", end="", flush=True)
+    print(f"{round(metrics['pc_val_acc'][-1],PRECISION)}]")
+
+    print("------------------------------------------------\n")
 
 def getPcModelArchitecture(input_size, output_size, num_layers, neurons_hidden_layer):
     neurons = [input_size]
