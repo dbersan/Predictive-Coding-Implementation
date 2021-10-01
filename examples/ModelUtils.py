@@ -36,6 +36,7 @@ def getFcModel(
                 self.dropout3 = nn.Dropout(0.50)
                 self.dropout4 = nn.Dropout(0.50)
                 self.dropout5 = nn.Dropout(0.50)
+                self.dropout6 = nn.Dropout(0.50)
 
             if activation=='relu':
                 self.activation_f = F.relu
@@ -75,6 +76,14 @@ def getFcModel(
                 self.fc3 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
                 self.fc4 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
                 self.fc5 = nn.Linear(neurons_hidden_layer, output_size)
+
+            if num_layers == 6:
+                self.fc1 = nn.Linear(input_size, neurons_hidden_layer) 
+                self.fc2 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc3 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc4 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc5 = nn.Linear(neurons_hidden_layer, neurons_hidden_layer) 
+                self.fc6 = nn.Linear(neurons_hidden_layer, output_size)
 
         def forward(self, x):
             x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
@@ -141,34 +150,60 @@ def getFcModel(
                 x = self.fc4(x)
 
             elif num_layers == 5:
+                
                 if self.dropout:
                     x = self.dropout1(x)
-
                 x = self.fc1(x)
                 x = self.activation_f(x)
 
                 if self.dropout:
                     x = self.dropout2(x)
-
                 x = self.fc2(x)
                 x = self.activation_f(x)
 
                 if self.dropout:
                     x = self.dropout3(x)
-
                 x = self.fc3(x)
                 x = self.activation_f(x)
 
                 if self.dropout:
                     x = self.dropout4(x)
-
                 x = self.fc4(x)
                 x = self.activation_f(x)
 
                 if self.dropout:
                     x = self.dropout5(x)
-
                 x = self.fc5(x)
+
+            elif num_layers == 6:
+                if self.dropout:
+                    x = self.dropout1(x)
+                x = self.fc1(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout2(x)
+                x = self.fc2(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout3(x)
+                x = self.fc3(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout4(x)
+                x = self.fc4(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout5(x)
+                x = self.fc5(x)
+                x = self.activation_f(x)
+
+                if self.dropout:
+                    x = self.dropout6(x)
+                x = self.fc6(x)
 
             else: 
                 raise Exception("Number of hidden layers out of range")

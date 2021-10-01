@@ -52,7 +52,7 @@ parameters = {
         # Common parameters
         'optimizer': 'adam',
         'activation': 'sigmoid', 
-        'hidden_layers': 5, 
+        'hidden_layers': 4, 
         'fc_neurons': 256,
 
         # Backprop
@@ -63,7 +63,7 @@ parameters = {
         # PC
         'lr_pc': 0.003, 
         'momentum_pc': 0.9 
-    } 
+    }
 
 # Count number of classes
 subfolders = [ f.path for f in os.scandir(FOLDER) if f.is_dir() ]

@@ -52,7 +52,7 @@ parameters = {
         # Common parameters
         'optimizer': 'adam',
         'activation': 'sigmoid', 
-        'hidden_layers': 1, 
+        'hidden_layers': 6, 
         'fc_neurons': 256,
 
         # Backprop

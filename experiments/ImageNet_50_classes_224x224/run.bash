@@ -21,10 +21,10 @@ sleep 5
 python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_5.py
 echo "Experiment 6"
 sleep 5
-python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_6.py
+python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_6.py 
 echo "Experiment 7"
 sleep 5
-python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_7.py
+# python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_7.py <- too little layers, maybe a problem
 echo "Experiment 8"
 sleep 5
 python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_8.py
@@ -34,6 +34,12 @@ python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_9
 echo "Experiment 10"
 sleep 5
 python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_10.py
+echo "Experiment 11"
+sleep 5
+python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_11.py
+echo "Experiment 12"
+sleep 5
+python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_12.py
 
 echo "----------------------------------------"
 echo "              VARY FC NEURONS           "

@@ -52,7 +52,7 @@ parameters = {
         # Common parameters
         'optimizer': 'adam',
         'activation': 'sigmoid', 
-        'hidden_layers': 4, 
+        'hidden_layers': 3, 
         'fc_neurons': 256,
 
         # Backprop
@@ -63,7 +63,7 @@ parameters = {
         # PC
         'lr_pc': 0.003, 
         'momentum_pc': 0.9 
-    }
+    } 
 
 # Count number of classes
 subfolders = [ f.path for f in os.scandir(FOLDER) if f.is_dir() ]
@@ -210,7 +210,7 @@ metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
             device,
             PRINT_EVERY_N_BATCHES,
             pc_model=pc_model,
-            verbose=False)
+            verbose=True)
 
 # Print Metrics
 ModelUtils.printMetrics(metrics)
