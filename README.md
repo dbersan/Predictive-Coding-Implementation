@@ -44,4 +44,11 @@ python -W ignore examples/imagenet-64x64.py
 python -W ignore examples/imagenet-224x224.py
 ```
 
+### Experiment Sequence 
+
+1. For 50 classes: 
+
+```bash
+./experiments/ImageNet_50_classes_224x224/run.bash > results/ImageNet_50_classes_224x224/log.txt
+```
 
