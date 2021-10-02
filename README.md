@@ -49,6 +49,6 @@ python -W ignore examples/imagenet-224x224.py
 1. For 50 classes: 
 
 ```bash
-./experiments/ImageNet_50_classes_224x224/run.bash >> results/ImageNet_50_classes_224x224/log.txt
+./experiments/ImageNet_50_classes_224x224/run.bash | tee -a results/ImageNet_50_classes_224x224/log.txt
 ```
 
