@@ -210,7 +210,7 @@ metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
             device,
             PRINT_EVERY_N_BATCHES,
             pc_model=pc_model,
-            verbose=True)
+            verbose=False)
 
 # Print Metrics
 ModelUtils.printMetrics(metrics)

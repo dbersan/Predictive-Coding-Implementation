@@ -373,8 +373,7 @@ def train_TransferLearning_Simultaneous_Backprop_PC(
             valid_accuracy_pc = np.equal(prediction_list_pc_valid, labels_list_valid).sum()*1.0/len(prediction_list_pc_valid)
 
         # Print Loss and Accuracy 
-        if verbose:
-            print('Epoch: %d, (backprop) acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
+        print('Epoch: %d, (backprop) acc: %.3f, val acc: %.3f | (pc) acc: %.3f, val acc: %.3f' % 
                 (epoch + 1, acc_metric, valid_accuracy, acc_metric_pc, valid_accuracy_pc))
         
         running_loss = 0.0
