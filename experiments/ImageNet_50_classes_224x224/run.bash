@@ -1,6 +1,6 @@
-echo "----------------------------------------"
-echo "              VARY DEPTH                "
-echo "----------------------------------------"
+# echo "----------------------------------------"
+# echo "              VARY DEPTH                "
+# echo "----------------------------------------"
 # echo "Experiment 1"
 # sleep 5
 # # python -W ignore experiments/ImageNet_50_classes_224x224/vary_depth/experiment_1.py <- too little layers, maybe a problem
