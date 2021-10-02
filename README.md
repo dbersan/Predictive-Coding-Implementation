@@ -52,3 +52,20 @@ python -W ignore examples/imagenet-224x224.py
 ./experiments/ImageNet_50_classes_224x224/run.bash | tee -a results/ImageNet_50_classes_224x224/log.txt
 ```
 
+- Or, using `tmux`: 
+
+```bash
+tmux
+```
+
+```bash
+./experiments/ImageNet_50_classes_224x224/run.bash | tee -a results/ImageNet_50_classes_224x224/log.txt
+```
+
+Detach from session with `Ctrl+B` and then `D`
+
+- To reattach after logging off: 
+
+```bash
+tmux attach
+```
