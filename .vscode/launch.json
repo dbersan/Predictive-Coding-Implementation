@@ -80,6 +80,14 @@
             "program": "${workspaceFolder}/examples/imagenet-224x224.py",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/experiments/ImageNet_50_classes_224x224/vary_depth/experiment_10.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
         }
 
     ]
