@@ -28,7 +28,7 @@ IMAGE_SIZE = 224
 TRAIN_BATCH_SIZE = 32
 EPOCHS = 20
 VALID_PERC = 0.15
-USE_REDUCED_DATASET = False
+USE_REDUCED_DATASET = True
 
 # Network Architecture
 FC_NEURONS = 2048 # deprecated, set at the `parameters` dictionary
@@ -53,7 +53,7 @@ parameters = {
         'optimizer': 'sgd',
         'activation': 'relu', 
         'hidden_layers': 2, 
-        'fc_neurons': 2048,
+        'fc_neurons': FC_NEURONS,
 
         # Backprop
         'dropout_bp': False, 
