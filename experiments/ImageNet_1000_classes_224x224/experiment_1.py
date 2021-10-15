@@ -23,16 +23,19 @@ import examples.ModelUtils as ModelUtils
 # Set PyTorch device
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+# Debugging
+VERBOSE = True
+
 # Dataset Parameters
 IMAGE_SIZE = 224
 TRAIN_BATCH_SIZE = 32
 EPOCHS = 20
 VALID_PERC = 0.15
-USE_REDUCED_DATASET = True
+USE_REDUCED_DATASET = False
 
 # Network Architecture
 FC_NEURONS = 2048 # deprecated, set at the `parameters` dictionary
-PRINT_EVERY_N_BATCHES = 2000
+PRINT_EVERY_N_BATCHES = 1000
 
 # Predictive Coding parameters
 INFERENCE_STEPS = 40
@@ -50,9 +53,10 @@ if USE_REDUCED_DATASET:     # Use reduced dataset?
 parameters = {
         
         # Common parameters
-        'optimizer': 'sgd',
-        'activation': 'relu', 
+        'optimizer': 'adam',
+        'activation': 'sigmoid', 
         'hidden_layers': 2, 
+        # 'hidden_layers': 5, 
         'fc_neurons': FC_NEURONS,
 
         # Backprop
@@ -61,8 +65,9 @@ parameters = {
         'momentum_bp': 0.9, 
 
         # PC
-        'lr_pc': 0.0005, 
+        'lr_pc': 0.001, 
         'momentum_pc': 0.9 
+        # 'momentum_pc': 0.0
     } 
 
 # Count number of classes
@@ -210,7 +215,7 @@ metrics = ModelUtils.train_TransferLearning_Simultaneous_Backprop_PC(
             device,
             PRINT_EVERY_N_BATCHES,
             pc_model=pc_model,
-            verbose=False)
+            verbose=VERBOSE)
 
 # Print Metrics
 ModelUtils.printMetrics(metrics)
